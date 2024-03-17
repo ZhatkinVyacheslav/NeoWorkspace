@@ -1,25 +1,27 @@
-import React, { Component } from 'react';
-import styles from './RegistrationPage.module.css';
+import React, { Component } from "react";
+import styles from "./../css/RegistrationPage.module.css";
+import { BrowserRouter as Router, Route, Link, Routes } from "react-router-dom";
+import RegistrationPage from "./RegistrationPage";
 
-class RegistrationPage extends Component {
+class LoginPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      login: '',
-      password: '',
+      login: "", // Исправленное имя свойства
+      password: "",
     };
   }
 
   handleInputChange = (event) => {
     this.setState({
-      [event.target.name]: event.target.value
+      [event.target.name]: event.target.value,
     });
-  }
+  };
 
   handleSubmit = (event) => {
     event.preventDefault();
     console.log(this.state);
-  }
+  };
 
   render() {
     return (
@@ -48,10 +50,32 @@ class RegistrationPage extends Component {
             className={styles.formControl}
           />
         </div>
-        <button type="submit" className={styles.submitButton}>Зарегистрироваться</button>
+        <button type="submit" className={styles.submitButton}>
+          Войти
+        </button>
+        <div>
+          <p>
+            Если у вас нет страницы, то вы можете{" "}
+            <Link to="/registration" style={{ color: "blue" }}>
+              зарегистрироваться
+            </Link>
+            .
+          </p>
+        </div>
       </form>
     );
   }
 }
 
-export default RegistrationPage;
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/registration" element={<RegistrationPage />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;
