@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import styles from './../css/RegistrationPage.module.css'
+import {Link} from "react-router-dom";
+
 
 class RegistrationPage extends Component {
   constructor(props) {
@@ -61,6 +63,15 @@ class RegistrationPage extends Component {
           />
         </div>
         <button type="submit" className={styles.submitButton}>Зарегистрироваться</button>
+        <div>
+          <p>
+            Если у вас есть страница, то вы можете{" "}
+            <Link to="/" style={{ color: "blue" }}>
+              войти
+            </Link>
+            .
+          </p>
+        </div>
       </form>
     );
   }
