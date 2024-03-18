@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import styles from './../css/RegistrationPage.module.css'
 import {Link} from "react-router-dom";
-
+import axios from 'axios';
 
 class RegistrationPage extends Component {
   constructor(props) {
@@ -9,6 +9,7 @@ class RegistrationPage extends Component {
     this.state = {
       login: '',
       password: '',
+      confirmpassword: '',
     };
   }
 
@@ -18,9 +19,21 @@ class RegistrationPage extends Component {
     });
   }
 
-  handleSubmit = (event) => {
+  handleSubmit = async (event) => {
     event.preventDefault();
-    console.log(this.state);
+    console.log('Submit pressed');
+    const {login, password, confirmpassword} = this.state;
+    if(password !== confirmpassword) {
+      alert('Пароли не совпадают');
+      return;
+    }
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/register', {login, password});
+      console.log(response.data);
+    } catch (e) {
+      console.error("Registration Error: ", e);
+    }
   }
 
   render() {
@@ -39,11 +52,11 @@ class RegistrationPage extends Component {
           />
         </div>
         <div className={styles.formGroup}>
-          <label htmlFor="password1">Пароль:</label>
+          <label htmlFor="password">Пароль:</label>
           <input
             type="password"
-            id="password1"
-            name="password1"
+            id="password"
+            name="password"
             value={this.state.password}
             onChange={this.handleInputChange}
             required
@@ -51,12 +64,12 @@ class RegistrationPage extends Component {
           />
         </div>
         <div className={styles.formGroup}>
-          <label htmlFor="password2">Повторите пароль:</label>
+          <label htmlFor="confirmpassword">Повторите пароль:</label>
           <input
             type="password"
-            id="password2"ы
-            name="password2"
-            value={this.state.password}
+            id="confirmpassword"
+            name="confirmpassword"
+            value={this.state.confirmpassword}
             onChange={this.handleInputChange}
             required
             className={styles.formControl}
@@ -76,5 +89,6 @@ class RegistrationPage extends Component {
     );
   }
 }
+
 
 export default RegistrationPage;
