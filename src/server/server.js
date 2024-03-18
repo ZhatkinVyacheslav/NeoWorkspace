@@ -36,26 +36,35 @@ const createTable = async () => {
   }
 };
 
-// Call createTable when the server starts
+// Создаем таблицу при старте сервера
 createTable().catch(err => {
   console.error('Error creating table:', err);
-  // Handle the error appropriately, such as by shutting down the server
   process.exit(1);
 });
 
 app.post('/api/register', async (req, res) => {
   const { login, password } = req.body;
   try {
-    // Hash the password before inserting it into the database
-    const hashedPassword = await bcrypt.hash(password, 10);
-
+    // Проверяем, существует ли пользователь с таким именем
     const client = await pool.connect();
-    await client.query('BEGIN');
-    const result = await client.query(
+    const existingUser = await client.query('SELECT * FROM users WHERE Login = $1', [login]);
+    client.release();
+
+    if (existingUser.rows.length > 0) {
+      // Если пользователь существует, возвращаем ошибку
+      return res.status(409).json({ message: 'User already exists.' });
+    }
+
+    // Если пользователя не существует, хешируем пароль и добавляем нового пользователя
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newClient = await pool.connect();
+    await newClient.query('BEGIN');
+    const result = await newClient.query(
       'INSERT INTO users (Login, Password) VALUES ($1, $2) RETURNING *', [login, hashedPassword]
     );
-    await client.query('COMMIT');
-    client.release();
+    await newClient.query('COMMIT');
+    newClient.release();
+
     console.log('Successfully registered');
     res.status(201).json(result.rows[0]);
   } catch (e) {
