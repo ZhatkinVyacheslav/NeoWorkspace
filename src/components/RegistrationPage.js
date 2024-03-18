@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import styles from './../css/RegistrationPage.module.css'
-import {Link} from "react-router-dom";
-
+import { Link } from "react-router-dom";
+import axios from 'axios';
 
 class RegistrationPage extends Component {
   constructor(props) {
@@ -9,6 +9,7 @@ class RegistrationPage extends Component {
     this.state = {
       login: '',
       password: '',
+      confirmpassword: '',
     };
   }
 
@@ -18,18 +19,43 @@ class RegistrationPage extends Component {
     });
   }
 
-  handleSubmit = (event) => {
+  handleSubmit = async (event) => {
     event.preventDefault();
-    console.log(this.state);
+    console.log('Submit pressed');
+    const { login, password, confirmpassword } = this.state;
+    if (password !== confirmpassword) {
+      alert('Пароли не совпадают');
+      return;
+    }
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/register', { login, password });
+      console.log(response.data);
+      // Проверяем статус ответа сервера
+      if (response.status === 201) {
+        // Если статус 201, выводим сообщение об успешном регистрации
+        alert('Пользователь успешно зарегистрирован.');
+      }
+    } catch (error) {
+      console.error("Registration Error: ", error);
+      // Проверяем статус ответа сервера
+      if (error.response && error.response.status === 409) {
+        // Если статус 409, выводим сообщение об ошибке
+        alert('Пользователь с таким именем уже существует.');
+      } else {
+        // Другие ошибки сервера
+        alert('Произошла ошибка при регистрации.');
+      }
+    }
   }
 
   render() {
     return (
       <form onSubmit={this.handleSubmit} className={styles.form}>
-         <h1>Регистарция:</h1>
+        <h1>Регистарция:</h1>
         <div className={styles.formGroup}>
           <label htmlFor="login">Логин:</label>
-            <input
+          <input
             type="text"
             id="login"
             name="login"
@@ -40,11 +66,11 @@ class RegistrationPage extends Component {
           />
         </div>
         <div className={styles.formGroup}>
-          <label htmlFor="password1">Пароль:</label>
+          <label htmlFor="password">Пароль:</label>
           <input
             type="password"
-            id="password1"
-            name="password1"
+            id="password"
+            name="password"
             value={this.state.password}
             onChange={this.handleInputChange}
             required
@@ -52,12 +78,12 @@ class RegistrationPage extends Component {
           />
         </div>
         <div className={styles.formGroup}>
-          <label htmlFor="password2">Повторите пароль:</label>
+          <label htmlFor="confirmpassword">Повторите пароль:</label>
           <input
             type="password"
-            id="password2"ы
-            name="password2"
-            value={this.state.password}
+            id="confirmpassword"
+            name="confirmpassword"
+            value={this.state.confirmpassword}
             onChange={this.handleInputChange}
             required
             className={styles.formControl}
@@ -77,5 +103,6 @@ class RegistrationPage extends Component {
     );
   }
 }
+
 
 export default RegistrationPage;
