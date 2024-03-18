@@ -26,6 +26,7 @@ class LoginPage extends Component {
   render() {
     return (
       <form onSubmit={this.handleSubmit} className={styles.form}>
+        <h1>Вход:</h1>
         <div className={styles.formGroup}>
           <label htmlFor="login">Логин:</label>
           <input
