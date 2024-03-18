@@ -26,6 +26,7 @@ class RegistrationPage extends Component {
   render() {
     return (
       <form onSubmit={this.handleSubmit} className={styles.form}>
+         <h1>Регистарция:</h1>
         <div className={styles.formGroup}>
           <label htmlFor="login">Логин:</label>
             <input

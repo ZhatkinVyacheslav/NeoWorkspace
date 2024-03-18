@@ -1,34 +1,58 @@
+body {
+  background-color: #172829f3;
+  margin: 0;
+  padding: 0;
+}
+
 .form {
-    max-width: 300px;
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  .formGroup {
-    margin-bottom: 15px;
-  }
-  
-  .formControl {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  .submitButton {
-    width: 100%;
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .submitButton:hover {
-    background-color: #0056b3;
-    margin-bottom: 20px;
-  }
-  
+  margin: 0 auto;
+  padding: 20px;
+  border: 4px solid #18ffff;
+  background-color: white;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  border-radius: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 50%; /* Устанавливаем ширину формы */
+  max-width: 600px; /* Ограничиваем максимальную ширину формы */
+}
+
+.centered-form h1 {
+  color: white; /* Цвет текста заголовка */
+  margin-bottom: 20px; /* Отступ снизу */
+  font-size: 28px;
+}
+
+.formGroup {
+  margin-bottom: 15px;
+}
+
+.formControl {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.submitButton {
+  width: 100%;
+  padding: 10px;
+  background-color: #18ffff;
+  color: #000000f3;
+  border: 1px solid #f7f7f7;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 20px;
+  cursor: pointer; /* Изменяем курсор при наведении */
+  border-radius: 20px;
+}
+
+.submitButton:hover {
+  border-radius: 20px;
+  border: 1px solid #080808;
+  cursor: pointer; /* Изменяем курсор при наведении */
+  /* margin-bottom: 20px; */
+}
