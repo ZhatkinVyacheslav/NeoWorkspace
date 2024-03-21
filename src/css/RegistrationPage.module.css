@@ -2,27 +2,29 @@ body {
   background-color: #172829f3;
   margin: 0;
   padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
 .form {
-  margin: 0 auto;
+  margin:100px auto; 
+  margin-left: -15%;
   padding: 20px;
-  border: 4px solid #18ffff;
+  border: 1px solid #363636;
   background-color: white;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: white;
-  border-radius: 20px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: 50%; /* Устанавливаем ширину формы */
-  max-width: 600px; /* Ограничиваем максимальную ширину формы */
+  border-radius: 12px;
+  box-shadow: 0px 0px 500px rgb(135, 172, 170);
+  width: 200%; 
+  height: 50%;
+  max-width: 600px; 
+  animation: glow 2s ease-in-out infinite alternate;
 }
 
 .centered-form h1 {
-  color: white; /* Цвет текста заголовка */
-  margin-bottom: 20px; /* Отступ снизу */
+  color: white; 
+  margin-bottom: 20px; 
   font-size: 28px;
 }
 
@@ -31,7 +33,7 @@ body {
 }
 
 .formControl {
-  width: 100%;
+  width: 97%;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -40,19 +42,14 @@ body {
 .submitButton {
   width: 100%;
   padding: 10px;
-  background-color: #18ffff;
-  color: #000000f3;
+  background-color: #1c8450;
+  color: #ffffff;
   border: 1px solid #f7f7f7;
-  border-radius: 4px;
   cursor: pointer;
   font-size: 20px;
-  cursor: pointer; /* Изменяем курсор при наведении */
-  border-radius: 20px;
+  border-radius: 4px;
 }
 
 .submitButton:hover {
-  border-radius: 20px;
   border: 1px solid #080808;
-  cursor: pointer; /* Изменяем курсор при наведении */
-  /* margin-bottom: 20px; */
 }

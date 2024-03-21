@@ -52,7 +52,7 @@ class RegistrationPage extends Component {
   render() {
     return (
       <form onSubmit={this.handleSubmit} className={styles.form}>
-        <h1>Регистарция:</h1>
+        <h1>Регистарция</h1>
         <div className={styles.formGroup}>
           <label htmlFor="login">Логин:</label>
           <input
@@ -92,9 +92,9 @@ class RegistrationPage extends Component {
         <button type="submit" className={styles.submitButton}>Зарегистрироваться</button>
         <div>
           <p>
-            Если у вас есть страница, то вы можете{" "}
+            Если вы ранее регистрировались, то используйте форму {" "}
             <Link to="/" style={{ color: "blue" }}>
-              войти
+              авторизации
             </Link>
             .
           </p>
