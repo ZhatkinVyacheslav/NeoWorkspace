@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import styles from "./../css/RegistrationPage.module.css";
 import { BrowserRouter as Router, Route, Link, Routes } from "react-router-dom";
 import RegistrationPage from "./RegistrationPage";
+import axios from 'axios';
+import bcrypt from 'bcryptjs';
 
 class LoginPage extends Component {
   constructor(props) {
@@ -16,12 +18,34 @@ class LoginPage extends Component {
     this.setState({
       [event.target.name]: event.target.value,
     });
-  };
+  }
 
-  handleSubmit = (event) => {
+  handleSubmit = async (event) => {
     event.preventDefault();
-    console.log(this.state);
-  };
+    console.log('Submit login request');
+    const { login, password } = this.state;
+    // Хешируем пароль перед передачей запроса на сервер
+    try {
+      const response = await axios.post('http://localhost:5000/api/login', { login, password });
+      console.log(response.data);
+      // Проверяем статус ответа сервера
+      if (response.status === 201) {
+        // Статус 201 - успешный запрос на авторизацию
+        console.log('Successfull login request');
+      }
+    } catch (error) {
+      console.error("Error on login request: ", error);
+      // Проверяем статус ответа сервера
+      if (error.response && error.response.status === 409) {
+        // Если статус 409, выводим сообщение об ошибке
+        alert('Неудачная попытка входа. Проверьте логин и пароль.');
+      } else {
+        // Другие ошибки сервера
+        alert('Произошла ошибка при входе. Попробуйте снова.');
+      }
+    }
+  }
+  
 
   render() {
     return (
