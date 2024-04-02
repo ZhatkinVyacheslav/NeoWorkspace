@@ -48,8 +48,13 @@ body {
   cursor: pointer;
   font-size: 20px;
   border-radius: 4px;
+  margin-bottom: 10px;
 }
 
 .submitButton:hover {
   border: 1px solid #080808;
+}
+
+.linkTitle{
+  color:blue;
 }

@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import styles from "./../css/RegistrationPage.module.css";
 import { BrowserRouter as Router, Route, Link, Routes } from "react-router-dom";
 import RegistrationPage from "./RegistrationPage";
+import TestHomePage from "./TestHomePage";
 import axios from 'axios';
 
 class LoginPage extends Component {
@@ -47,6 +48,11 @@ class LoginPage extends Component {
     }
   }
 
+  handleClick = () => {
+    // наверное тут должен быть код отправки и проверки данных на сервер
+    this.props.history.push('/TestHomePage');
+  };
+
 
   render() {
     return (
@@ -79,10 +85,15 @@ class LoginPage extends Component {
         <button type="submit" className={styles.submitButton}>
           Войти
         </button>
+        <div className={styles.formGroup}>
+        <label htmlFor="rememberMe">
+          <input type="checkbox" id="rememberMe" name="rememberMe" /> Запомнить меня
+        </label>
+      </div>
         <div>
           <p>
             Если у вас нет страницы, то вы можете{" "}
-            <Link to="/registration" style={{ color: "blue" }}>
+            <Link to="/registration" className={styles.linkTitle}>
               зарегистрироваться
             </Link>
             .
@@ -99,6 +110,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/registration" element={<RegistrationPage />} />
+        <Route path="/TestHomePage" element={<TestHomePage />} />
       </Routes>
     </Router>
   );

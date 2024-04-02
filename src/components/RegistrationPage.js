@@ -93,7 +93,7 @@ class RegistrationPage extends Component {
         <div>
           <p>
             Если вы ранее регистрировались, то используйте форму {" "}
-            <Link to="/" style={{ color: "blue" }}>
+            <Link to="/" className={styles.linkTitle}>
               авторизации
             </Link>
             .
