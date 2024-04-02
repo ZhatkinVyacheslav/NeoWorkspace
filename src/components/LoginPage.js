@@ -3,13 +3,12 @@ import styles from "./../css/RegistrationPage.module.css";
 import { BrowserRouter as Router, Route, Link, Routes } from "react-router-dom";
 import RegistrationPage from "./RegistrationPage";
 import axios from 'axios';
-import bcrypt from 'bcryptjs';
 
 class LoginPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      login: "", 
+      login: "",
       password: "",
     };
   }
@@ -24,14 +23,16 @@ class LoginPage extends Component {
     event.preventDefault();
     console.log('Submit login request');
     const { login, password } = this.state;
-    // Хешируем пароль перед передачей запроса на сервер
     try {
+      localStorage.removeItem('token');
       const response = await axios.post('http://localhost:5000/api/login', { login, password });
       console.log(response.data);
       // Проверяем статус ответа сервера
-      if (response.status === 201) {
+      if (response.status === 200) {
         // Статус 201 - успешный запрос на авторизацию
         console.log('Successfull login request');
+        // Сохраняем токен в localStorage
+        localStorage.setItem('token', response.data.token);
       }
     } catch (error) {
       console.error("Error on login request: ", error);
@@ -45,7 +46,7 @@ class LoginPage extends Component {
       }
     }
   }
-  
+
 
   render() {
     return (
