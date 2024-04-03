@@ -9,7 +9,22 @@ class TestHomePage extends React.Component {
     redirectToLogin: false,
   };
 
-  handleSubmit = async (event) => {
+  constructor(props) {
+    super(props);
+    this.state = {
+      field1Value: ''
+    };
+  }
+  
+  componentDidMount() {
+    // Получаем значение user из localStorage при монтировании компонента
+    const user = localStorage.getItem('user');
+    if (user) {
+      this.setState({ field1Value: user }); // Устанавливаем значение поля
+    }
+  }
+
+  handleLogout = async (event) => {
     event.preventDefault();
     console.log('Submit logout request');
     const token = localStorage.getItem('token');
@@ -65,7 +80,7 @@ class TestHomePage extends React.Component {
           <h1>Тестовая страничка</h1>
           <label>
             Поле1:
-            <input type="text" name="field1" className={styles.formControl} />
+            <input type="text" name="field1" value={this.state.field1Value} className={styles.formControl} readOnly />
           </label>
           <label>
             Поле2:

@@ -159,8 +159,8 @@ app.post('/api/login', async (req, res) => {
     }
 
     // Создаем токен и отправляем его в заголовке с response.
-    const token = jwt.sign({ id: existingUser.rows[0].id }, 'secret', {
-      expiresIn: rememberMe ? '12h' : '1h' // Если checkbox "Remember me" выбран, то токен действителен 12 часов, иначе 1 час
+    const token = jwt.sign({ id: existingUser.rows[0].id }, secretKey, {
+      expiresIn: rememberMe ? '2m' : '1m' // Если checkbox "Remember me" выбран, то токен действителен 12 часов, иначе 1 час
     });
     res.status(200).json({ token });
   } catch (e) {
@@ -198,7 +198,7 @@ app.post('/api/logout', async (req, res) => {
 // Проверка JWT токена при запросах
 app.use((req, res, next) => {
   const authHeader = req.headers['Authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const token = req.headers.authorization.split(' ')[1]; // Извлекаем токен из заголовка
 
   if (token == null) return res.sendStatus(401);
 

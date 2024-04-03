@@ -34,6 +34,7 @@ class LoginPage extends Component {
         console.log('Successfull login request');
         // Сохраняем токен в localStorage
         localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', login);
         sessionStorage.setItem('token', response.data.token);
       }
     } catch (error) {
