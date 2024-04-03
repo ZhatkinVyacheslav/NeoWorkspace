@@ -23,10 +23,10 @@ class LoginPage extends Component {
   handleSubmit = async (event) => {
     event.preventDefault();
     console.log('Submit login request');
-    const { login, password } = this.state;
+    const { login, password, rememberMe } = this.state;
     try {
       localStorage.removeItem('token');
-      const response = await axios.post('http://localhost:5000/api/login', { login, password });
+      const response = await axios.post('http://localhost:5000/api/login', { login, password, rememberMe });
       console.log(response.data);
       // Проверяем статус ответа сервера
       if (response.status === 200) {
@@ -34,6 +34,7 @@ class LoginPage extends Component {
         console.log('Successfull login request');
         // Сохраняем токен в localStorage
         localStorage.setItem('token', response.data.token);
+        sessionStorage.setItem('token', response.data.token);
       }
     } catch (error) {
       console.error("Error on login request: ", error);
@@ -49,7 +50,7 @@ class LoginPage extends Component {
   }
 
   handleClick = () => {
-    // наверное тут должен быть код отправки и проверки данных на сервер
+    // Магическая несуществующая кнопка перехода на TestPage.
     this.props.history.push('/TestHomePage');
   };
 
@@ -86,10 +87,10 @@ class LoginPage extends Component {
           Войти
         </button>
         <div className={styles.formGroup}>
-        <label htmlFor="rememberMe">
-          <input type="checkbox" id="rememberMe" name="rememberMe" /> Запомнить меня
-        </label>
-      </div>
+          <label htmlFor="rememberMe">
+            <input type="checkbox" id="rememberMe" name="rememberMe" checked={this.state.rememberMe} onChange={this.handleCheckboxChange} />
+          </label>
+        </div>
         <div>
           <p>
             Если у вас нет страницы, то вы можете{" "}
