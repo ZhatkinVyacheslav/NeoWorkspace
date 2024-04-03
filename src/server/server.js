@@ -137,6 +137,9 @@ app.post('/api/register', async (req, res) => {
 
 app.post('/api/login', async (req, res) => {
   const { login, password, rememberMe } = req.body;
+  if(rememberMe == null) {
+    rememberMe = false;
+  }
   console.log('Start responding login');
   try {
     // Проверяем, существует ли пользователь с таким именем
