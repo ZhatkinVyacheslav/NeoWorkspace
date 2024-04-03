@@ -158,9 +158,10 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid password' });
     }
 
-    // Создаем токен и отправляем его в заголовке с response.
+    // Создаем токен и отправляем его в заголовке с response
+    // Если checkbox "Remember me" выбран, то токен действителен 12 часов, иначе 1 час
     const token = jwt.sign({ id: existingUser.rows[0].id }, secretKey, {
-      expiresIn: rememberMe ? '2m' : '1m' // Если checkbox "Remember me" выбран, то токен действителен 12 часов, иначе 1 час
+      expiresIn: rememberMe ? '12h' : '4h'
     });
     res.status(200).json({ token });
   } catch (e) {

@@ -15,7 +15,7 @@ class TestHomePage extends React.Component {
       field1Value: ''
     };
   }
-  
+
   componentDidMount() {
     // Получаем значение user из localStorage при монтировании компонента
     const user = localStorage.getItem('user');
@@ -79,12 +79,8 @@ class TestHomePage extends React.Component {
         <form className={styles.form} onSubmit={this.handleLogout}>
           <h1>Тестовая страничка</h1>
           <label>
-            Поле1:
+            Логин пользователя:
             <input type="text" name="field1" value={this.state.field1Value} className={styles.formControl} readOnly />
-          </label>
-          <label>
-            Поле2:
-            <input type="text" name="field2" className={styles.formControl} />
           </label>
           <button type="submit" className={styles.submitButton}>Выйти из сессии</button>
           <button type="button" className={styles.submitButton} onClick={this.handleCheckSession}>Проверить активность сессии</button>

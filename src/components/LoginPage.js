@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import styles from "./../css/RegistrationPage.module.css";
 import { BrowserRouter as Router, Route, Link, Routes } from "react-router-dom";
+import { Navigate } from 'react-router-dom';
 import RegistrationPage from "./RegistrationPage";
 import TestHomePage from "./TestHomePage";
 import axios from 'axios';
@@ -11,6 +12,7 @@ class LoginPage extends Component {
     this.state = {
       login: "",
       password: "",
+      redirectAfterLogin: false,
     };
   }
 
@@ -36,6 +38,7 @@ class LoginPage extends Component {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', login);
         sessionStorage.setItem('token', response.data.token);
+        this.setState({ redirectAfterLogin: true });
       }
     } catch (error) {
       console.error("Error on login request: ", error);
@@ -49,14 +52,10 @@ class LoginPage extends Component {
       }
     }
   }
-
-  handleClick = () => {
-    // Магическая несуществующая кнопка перехода на TestPage.
-    this.props.history.push('/TestHomePage');
-  };
-
-
   render() {
+    if (this.state.redirectAfterLogin) {
+      return <Navigate to="/TestHomePage" replace />;
+    }
     return (
       <form onSubmit={this.handleSubmit} className={styles.form}>
         <h1>Вход:</h1>
