@@ -136,13 +136,16 @@ app.post('/api/register', async (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
-  const { login, password } = req.body;
+  const { login, password, rememberMe } = req.body;
+  if(rememberMe == null) {
+    rememberMe = false;
+  }
   console.log('Start responding login');
   try {
     // Проверяем, существует ли пользователь с таким именем
     const client = await pool.connect();
     console.log('login connected');
-  
+
     const existingUser = await client.query('SELECT * FROM users WHERE Login = $1', [login]);
     console.log(existingUser.rows.length);
     client.release();
@@ -158,19 +161,48 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid password' });
     }
 
-    // Создаем токен и отправляем его в заголовке с response.
-    const token = jwt.sign({ id: existingUser.rows[0].id }, secretKey, { expiresIn: '1h' });
+    // Создаем токен и отправляем его в заголовке с response
+    // Если checkbox "Remember me" выбран, то токен действителен 12 часов, иначе 1 час
+    const token = jwt.sign({ id: existingUser.rows[0].id }, secretKey, {
+      expiresIn: rememberMe ? '12h' : '4h'
+    });
     res.status(200).json({ token });
   } catch (e) {
-      console.error('Login Error: ', e);
-      res.status(500).json({ message: 'Login failed.' });
+    console.error('Login Error: ', e);
+    res.status(500).json({ message: 'Login failed.' });
+  }
+});
+
+// Обработка logout запроса пользователя.
+app.post('/api/logout', async (req, res) => {
+  const token = req.headers.authorization.split(' ')[1]; // Извлекаем токен из заголовка
+  console.log('Start responding logout');
+  try {
+    // Проверяем, не является ли токен недействительным
+    const client = await pool.connect();
+    const invalidToken = await client.query('SELECT * FROM invalid_tokens WHERE Token = $1', [token]);
+    client.release();
+
+    if (invalidToken.rows.length > 0) {
+      // Если токен недействительный, возвращаем ошибку
+      return res.status(401).json({ message: 'Token is invalid.' });
     }
+
+    // Добавляем токен в список недействительных токенов
+    await client.query('INSERT INTO invalid_tokens (Token) VALUES ($1)', [token]);
+
+    // Возвращаем успешный ответ
+    return res.status(200).json({ message: 'Successfully logged out.' });
+  } catch (error) {
+    console.error('Error on logout request: ', error);
+    return res.status(500).json({ message: 'Internal server error.' });
+  }
 });
 
 // Проверка JWT токена при запросах
 app.use((req, res, next) => {
   const authHeader = req.headers['Authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const token = req.headers.authorization.split(' ')[1]; // Извлекаем токен из заголовка
 
   if (token == null) return res.sendStatus(401);
 
@@ -192,25 +224,26 @@ app.use((req, res, next) => {
   });
 });
 
-
-// Обработка logout запроса пользователя.
-app.post('/api/logout', async (req, res) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (token == null) return res.sendStatus(401);
+// Добавляем роут для проверки активности сессии
+app.get('/api/check-session', async (req, res) => {
+  const token = req.headers.authorization.split(' ')[1]; // Извлекаем токен из заголовка
 
   try {
+    // Проверяем, не является ли токен недействительным
     const client = await pool.connect();
-    await client.query('BEGIN');
-    await client.query('INSERT INTO invalid_tokens (Token) VALUES ($1)', [token]);
-    await client.query('COMMIT');
+    const invalidToken = await client.query('SELECT * FROM invalid_tokens WHERE Token = $1', [token]);
     client.release();
 
-    res.sendStatus(200);
-  } catch (e) {
-    console.error('Logout Error: ', e);
-    res.status(500).json({ message: 'Logout failed.' });
+    if (invalidToken.rows.length > 0) {
+      // Если токен недействительный, возвращаем статус "inactive"
+      return res.status(401).json({ status: 'inactive' });
+    }
+
+    // Если токен валидный, возвращаем успешный ответ
+    return res.status(200).json({ status: 'active' });
+  } catch (error) {
+    console.error('Error on session check request: ', error);
+    return res.status(500).json({ message: 'Internal server error.' });
   }
 });
 

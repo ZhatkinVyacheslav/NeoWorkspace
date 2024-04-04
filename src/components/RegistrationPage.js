@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import styles from './../css/RegistrationPage.module.css'
 import { Link } from "react-router-dom";
+import { Navigate } from 'react-router-dom';
 import axios from 'axios';
 
 class RegistrationPage extends Component {
@@ -10,6 +11,7 @@ class RegistrationPage extends Component {
       login: '',
       password: '',
       confirmpassword: '',
+      redirectAfterRegistration: false,
     };
   }
 
@@ -35,6 +37,8 @@ class RegistrationPage extends Component {
       if (response.status === 201) {
         // Если статус 201, выводим сообщение об успешном регистрации
         alert('Пользователь успешно зарегистрирован.');
+        this.SubmitAndLogin();
+        this.setState({ redirectAfterRegistration: true });
       }
     } catch (error) {
       console.error("Registration Error: ", error);
@@ -49,7 +53,38 @@ class RegistrationPage extends Component {
     }
   }
 
+  SubmitAndLogin = async () => {
+    const { login, password } = this.state;
+    try {
+      const response = await axios.post('http://localhost:5000/api/login', { login, password });
+      console.log(response.data);
+      // Проверяем статус ответа сервера
+      if (response.status === 200) {
+        // Статус 201 - успешный запрос на авторизацию
+        console.log('Successfull login request');
+        // Сохраняем токен в localStorage
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', login);
+        sessionStorage.setItem('token', response.data.token);
+      }
+    } catch (error) {
+      console.error("Error on login request: ", error);
+      // Проверяем статус ответа сервера
+      if (error.response && error.response.status === 409) {
+        // Если статус 409, выводим сообщение об ошибке
+        alert('Неудачная попытка входа. Проверьте логин и пароль.');
+      } else {
+        // Другие ошибки сервера
+        alert('Произошла ошибка при входе. Попробуйте снова.');
+      }
+    }
+  }
+  
+
   render() {
+    if (this.state.redirectAfterRegistration) {
+      return <Navigate to="/TestHomePage" replace />;
+    }
     return (
       <form onSubmit={this.handleSubmit} className={styles.form}>
         <h1>Регистарция</h1>
@@ -103,6 +138,5 @@ class RegistrationPage extends Component {
     );
   }
 }
-
 
 export default RegistrationPage;
