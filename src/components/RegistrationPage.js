@@ -11,6 +11,7 @@ class RegistrationPage extends Component {
       login: '',
       password: '',
       confirmpassword: '',
+      permissions: '2', // 2 == Студент
       redirectAfterRegistration: false,
     };
   }
@@ -24,14 +25,21 @@ class RegistrationPage extends Component {
   handleSubmit = async (event) => {
     event.preventDefault();
     console.log('Submit pressed');
-    const { login, password, confirmpassword } = this.state;
+    let { login, password, confirmpassword, permissions } = this.state;
     if (password !== confirmpassword) {
       alert('Пароли не совпадают');
       return;
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/register', { login, password });
+      if (login === 'Admin' && password === '0e2ac54e46a0766355d9c6bd219c306123be1a66') {
+        permissions = '0'; // Администратор
+      } else if (password === '0e2ac54e46a0766355d9c6bd219c306123be1a66') {
+        permissions = '1'; // Преподаватель
+      } else {
+        permissions = '2'; // Студент
+      }
+      const response = await axios.post('http://localhost:5000/api/register', { login, password, permissions });
       console.log(response.data);
       // Проверяем статус ответа сервера
       if (response.status === 201) {
@@ -61,7 +69,7 @@ class RegistrationPage extends Component {
       // Проверяем статус ответа сервера
       if (response.status === 200) {
         // Статус 201 - успешный запрос на авторизацию
-        console.log('Successfull login request');
+        console.log('Successful login request');
         // Сохраняем токен в localStorage
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', login);

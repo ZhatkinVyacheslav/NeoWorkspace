@@ -3,10 +3,64 @@ const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const WebSocket = require('ws');
+const http = require('http');
 
 const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 app.use(express.json());
 app.use(cors());
+
+// Структура для хранения комнат и пользователей.
+const rooms = new Map();
+
+wss.on('connection', ((ws, req) => {
+  // Пользователь подключается
+  ws.on('message', (message) => {
+    const {type, roomID, userID} = JSON.parse(message);
+    if (type === 'join') {
+      // Проверить комнату на существование
+      if (!rooms.has(roomID)) {
+        ws.send(JSON.stringify({type: 'error', message: 'Room not found'}));
+        return;
+      }
+      // Добавим пользователя в комнату
+      rooms.get(roomID).users.add(userID);
+      ws.send(JSON.stringify({message: 'Successfully joined the room'}));
+    }
+  });
+  ws.on('close', () => {
+    // При отключении пользователя, удаляем его из всех комнат
+    rooms.forEach((value, roomID) => {
+      if (value.users.has(ws.userID)) {
+        value.users.delete(ws.userID);
+      }
+    });
+  });
+
+  // Эндпоинт для создания комнаты
+  app.post('/create-room', (req, res) => {
+    const roomID = generateRoomId();
+    rooms.set(roomID, {users: new Set()});
+    res.json({roomID});
+  });
+
+  // Эндпоинт для добавления пользователя в комнату
+  app.post('/add-user-to-room', (req, res) => {
+    const {roomID, userID} = req.body;
+    if (!rooms.has(roomID)) {
+      res.status(404).json({message: 'Room not found'});
+      return;
+    }
+    rooms.get(roomID).users.add(userID);
+    res.json({message: 'Successfully added user to the room'});
+  });
+
+  function generateRoomId() {
+    return Math.random().toString(36).substring(7);
+  }
+}));
 
 const pool = new Pool({
   host: 'localhost',
@@ -28,7 +82,8 @@ const createUsersTable = async () => {
         CREATE TABLE IF NOT EXISTS public.users (
           ID SERIAL PRIMARY KEY,
           Login VARCHAR(50) UNIQUE NOT NULL,
-          Password VARCHAR(100) NOT NULL
+          Password VARCHAR(100) NOT NULL,
+          Permissions VARCHAR(1) UNIQUE NOT NULL
         )
       `);
     await client.query('COMMIT');
@@ -69,7 +124,8 @@ const createSessionTable = async () => {
         CREATE TABLE IF NOT EXISTS public.session (
           ID SERIAL PRIMARY KEY,
           Login VARCHAR(50) UNIQUE NOT NULL,
-          Password VARCHAR(100) NOT NULL
+          Password VARCHAR(100) NOT NULL,
+          Permissions VARCHAR(1) UNIQUE NOT NULL
         )
       `);
     await client.query('COMMIT');
@@ -102,7 +158,7 @@ createInvalidTokensTable().catch(err => {
 
 // Обрабатываем запрос регистрации
 app.post('/api/register', async (req, res) => {
-  const { login, password } = req.body;
+  const { login, password, permissions } = req.body;
   try {
     // Проверяем, существует ли пользователь с таким именем
     const client = await pool.connect();
@@ -119,11 +175,12 @@ app.post('/api/register', async (req, res) => {
     const newClient = await pool.connect();
     await newClient.query('BEGIN');
     const result = await newClient.query(
-      'INSERT INTO users (Login, Password) VALUES ($1, $2) RETURNING *', [login, hashedPassword]
+      'INSERT INTO users (Login, Password, Permissions) VALUES ($1, $2, $3) RETURNING *', [login, hashedPassword, permissions]
     );
     console.log(login);
     console.log(password);
     console.log(hashedPassword);
+    console.log(permissions);
     await newClient.query('COMMIT');
     newClient.release();
 
@@ -136,7 +193,7 @@ app.post('/api/register', async (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
-  const { login, password, rememberMe } = req.body;
+  let { login, password, rememberMe } = req.body;
   if(rememberMe == null) {
     rememberMe = false;
   }
@@ -251,3 +308,4 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
