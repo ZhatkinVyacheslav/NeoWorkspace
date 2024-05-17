@@ -5,6 +5,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const WebSocket = require('ws');
 const http = require('http');
+const crypto = require('crypto');
 
 const app = express();
 const server = http.createServer(app);
@@ -256,6 +257,18 @@ app.post('/api/logout', async (req, res) => {
   }
 });
 
+app.post('/api/rooms', (req, res) => {
+  const userID = req.body.userID;
+
+  // Generate a unique room ID
+  const roomID = generateUniqueRoomID();
+
+  // Store the room ID and user ID in your database
+
+  // Respond with the room ID
+  res.json({ roomID });
+});
+
 // Проверка JWT токена при запросах
 app.use((req, res, next) => {
   const authHeader = req.headers['Authorization'];
@@ -304,8 +317,11 @@ app.get('/api/check-session', async (req, res) => {
   }
 });
 
+function generateUniqueRoomID() {
+  return crypto.randomBytes(16).toString('hex');
+}
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
