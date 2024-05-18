@@ -11,7 +11,24 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST'],
+  credentials:true
+}));
+
+const PORT = process.env.PORT || 5000;
+const httpServer = app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+const io = require('socket.io')(httpServer, {
+  cors: {
+    origin: 'http://localhost:3000', // Allow requests from client running on this origin
+    methods: ['GET', 'POST'], // Allow these HTTP methods
+    credentials: true // Allow cookies to be sent with requests
+  }
+});
 
 // Структура для хранения комнат и пользователей.
 const rooms = new Map();
@@ -257,16 +274,22 @@ app.post('/api/logout', async (req, res) => {
   }
 });
 
-app.post('/api/rooms', (req, res) => {
+app.post('/api/rooms', async (req, res) => {
   const userID = req.body.userID;
 
   // Generate a unique room ID
   const roomID = generateUniqueRoomID();
 
-  // Store the room ID and user ID in your database
+  // Generate a room code from the room ID
+  const roomCode = btoa(roomID).substring(0, 6);
+
+  // Store the room ID and room code in your database
+  const client = await pool.connect();
+  await client.query('INSERT INTO rooms (roomID, roomCode, userID) VALUES ($1, $2, $3)', [roomID, roomCode, userID]);
+  client.release();
 
   // Respond with the room ID
-  res.json({ roomID });
+  res.json({roomCode});
 });
 
 // Проверка JWT токена при запросах
@@ -321,7 +344,4 @@ function generateUniqueRoomID() {
   return crypto.randomBytes(16).toString('hex');
 }
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+

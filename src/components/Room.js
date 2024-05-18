@@ -5,7 +5,9 @@ const Room = ({ userID }) => {
 const  [ roomID, setRoomID ] = useState(null);
 const [isConnected, setIsConnected] = useState(false);
   useEffect(() => {
-    const socket = io('http://localhost:3000');
+    const socket = io('http://localhost:5000', {
+      withCredentials: true
+    });
 
     // Подключаемся к серверу
     socket.on('connect', () => {
@@ -39,12 +41,13 @@ const [isConnected, setIsConnected] = useState(false);
     });
 
     const data = await response.json();
-    setRoomID(data.roomID);
+    setRoomID(data.roomCode);
   };
 
   return (
       <div>
-        <h1>Room: {roomID}</h1>
+        <h1>Welcome to the Room System Test Page</h1>
+        <h2>Room: {roomID}</h2>
         <input type="text" value={roomID || ''} disabled />
         <button onClick={createRoom} disabled={!isConnected}>Create Room</button>
       </div>
