@@ -1,0 +1,21 @@
+{
+    "image": "mcr.microsoft.com/devcontainers/universal:2",
+    "features": {
+      "ghcr.io/itsmechlark/features/postgresql:1": {
+        "version": "latest"
+      }
+    },
+    "services": {
+      "postgres": {
+        "image": "postgres:13",
+        "env": {
+          "POSTGRES_USER": "neowflteam",
+          "POSTGRES_PASSWORD": "Qa1Ol0Sx2Km8",
+          "POSTGRES_DB": "TestingDB"
+        },
+        "ports": [5432]
+      }
+    },
+    "forwardPorts": [5432],
+    "postCreateCommand": "psql -U neowflteam -d TestingDB -c \"GRANT ALL PRIVILEGES ON DATABASE TestingDB TO neowflteam;\""
+}

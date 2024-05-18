@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import RegistrationPage from './RegistrationPage';
+import LoginPage from './components/LoginPage';
+import Room from './components/Room';
 
-// Рендерим компонент HelloWorld в DOM
-ReactDOM.render(<RegistrationPage />, document.getElementById('root'));
+ReactDOM.render(<LoginPage />, document.getElementById('root'));
+
+//Enable to access rooms debug page. MUST connect through localhost:3000/Room
+//ReactDOM.render(<Room userID="testUser" />, document.getElementById('root'));
