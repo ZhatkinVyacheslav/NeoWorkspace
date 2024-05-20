@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Link, Routes } from "react-router-dom";
 import { Navigate } from 'react-router-dom';
 import RegistrationPage from "./RegistrationPage";
 import TestHomePage from "./TestHomePage";
+import Room from "./Room";
 import axios from 'axios';
 
 class LoginPage extends Component {
@@ -112,6 +113,7 @@ function App() {
         <Route path="/" element={<LoginPage />} />
         <Route path="/registration" element={<RegistrationPage />} />
         <Route path="/TestHomePage" element={<TestHomePage />} />
+        <Route path="/Room" element={<Room />} />
       </Routes>
     </Router>
   );

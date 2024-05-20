@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import io from 'socket.io-client';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 const Room = ({ userID }) => {
 const  [ roomID, setRoomID ] = useState(null);
@@ -32,12 +33,18 @@ const [isConnected, setIsConnected] = useState(false);
   }, [userID]);
 
   const createRoom = async () => {
+    const token = localStorage.getItem('token');
     const response = await fetch('http://localhost:5000/api/rooms', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ userID }),
+      credentials: 'include',
+      body: JSON.stringify({
+        userID: 'yourUserID',
+        projectName: 'yourProjectName',
+      }),
     });
 
     const data = await response.json();

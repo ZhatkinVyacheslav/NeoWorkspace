@@ -6,10 +6,13 @@ const jwt = require('jsonwebtoken');
 const WebSocket = require('ws');
 const http = require('http');
 const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+
+
 app.use(express.json());
 app.use(cors({
   origin: 'http://localhost:3000',
@@ -17,17 +20,16 @@ app.use(cors({
   credentials:true
 }));
 
+// Правила для ограничения трафика, чтоб предотвратить уязвимость
+const apiLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 минут
+  max: 100, // ограничение каждого IP до 100 запросов в windowMs
+  message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+
 const PORT = process.env.PORT || 5000;
 const httpServer = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-});
-
-const io = require('socket.io')(httpServer, {
-  cors: {
-    origin: 'http://localhost:3000', // Allow requests from client running on this origin
-    methods: ['GET', 'POST'], // Allow these HTTP methods
-    credentials: true // Allow cookies to be sent with requests
-  }
 });
 
 // Структура для хранения комнат и пользователей.
@@ -156,6 +158,42 @@ const createSessionTable = async () => {
   }
 };
 
+// Таблицы для Rooms, храним множество данных
+async function createTables() {
+  try {
+    const client = await pool.connect();
+
+    await client.query(`
+  CREATE TABLE IF NOT EXISTS rooms (
+    roomID VARCHAR(255) PRIMARY KEY,
+    roomCode VARCHAR(6) NOT NULL,
+    teacherID INTEGER REFERENCES users(id),
+    projectName VARCHAR(255) NOT NULL
+  );
+`);
+
+    await client.query(`
+  CREATE TABLE IF NOT EXISTS room_users (
+    roomID VARCHAR(255) REFERENCES rooms(roomID),
+    userID INTEGER REFERENCES users(id),
+    PRIMARY KEY (roomID, userID)
+  );
+`);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS project_stages (
+        stageID SERIAL PRIMARY KEY,
+        roomID VARCHAR(255) REFERENCES rooms(roomID),
+        stageName VARCHAR(255) NOT NULL
+      );
+    `);
+
+    client.release();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 // Создаем таблицу пользователей при старте сервера
 createUsersTable().catch(err => {
   console.error('Error creating table:', err);
@@ -171,6 +209,12 @@ createSessionTable().catch(err => {
 // Создаем таблицу недействительных токенов при старте сервера
 createInvalidTokensTable().catch(err => {
   console.error('Error creating invalid tokens table:', err);
+  process.exit(1);
+});
+
+// Создаем таблицы комнат при старте сервера
+createTables().catch(err => {
+  console.error('Error creating table:', err);
   process.exit(1);
 });
 
@@ -274,30 +318,13 @@ app.post('/api/logout', async (req, res) => {
   }
 });
 
-app.post('/api/rooms', async (req, res) => {
-  const userID = req.body.userID;
-
-  // Generate a unique room ID
-  const roomID = generateUniqueRoomID();
-
-  // Generate a room code from the room ID
-  const roomCode = btoa(roomID).substring(0, 6);
-
-  // Store the room ID and room code in your database
-  const client = await pool.connect();
-  await client.query('INSERT INTO rooms (roomID, roomCode, userID) VALUES ($1, $2, $3)', [roomID, roomCode, userID]);
-  client.release();
-
-  // Respond with the room ID
-  res.json({roomCode});
-});
 
 // Проверка JWT токена при запросах
 app.use((req, res, next) => {
-  const authHeader = req.headers['Authorization'];
-  const token = req.headers.authorization.split(' ')[1]; // Извлекаем токен из заголовка
+  const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+  if (authHeader == null) return res.sendStatus(401); // Check if authHeader is null
 
-  if (token == null) return res.sendStatus(401);
+  const token = authHeader.split(' ')[1];
 
   // Проверяем токен на наличие в таблице недействительных токенов
   pool.query('SELECT * FROM invalid_tokens WHERE Token = $1', [token], (error, results) => {
@@ -316,6 +343,50 @@ app.use((req, res, next) => {
     });
   });
 });
+const io = require('socket.io')(httpServer, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
+
+
+app.post('/api/rooms', apiLimiter, async (req, res) => {
+  const token = req.headers.authorization.split(' ')[1];
+  const decodedToken = jwt.verify(token, secretKey);
+  console.log('Decoded token:', decodedToken);
+  const userId = req.user.id;
+  console.log('User ID from token:', userId);
+  const projectName = req.body.projectName;
+
+  // Ищем ID пользователя
+  const user = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
+  if (user.rows.length === 0) {
+    return res.status(404).json({ message: 'User not found.' });
+  }
+
+  // Проверяем права пользователя. 1 - Преподаватель, 2 - Студент
+  console.log(typeof user.rows[0].permissions, user.rows[0].permissions);
+  if (Number(user.rows[0].permissions) !== 1) {
+    return res.status(403).json({ message: 'Only teachers can create rooms.' });
+  }
+
+  // Генерация уникальных ID для комнат
+  const roomID = generateUniqueRoomID();
+
+  // Сгенерировать комнату от уникального ID
+  const roomCode = btoa(roomID).substring(0, 6);
+
+  // Храним комнаты в базе данных
+  const client = await pool.connect();
+  await client.query('INSERT INTO rooms (roomID, roomCode, teacherID, projectName) VALUES ($1, $2, $3, $4)', [roomID, roomCode, userId, projectName]);
+  client.release();
+
+  // Respond with the room ID
+  res.json({roomCode});
+});
+
 
 // Добавляем роут для проверки активности сессии
 app.get('/api/check-session', async (req, res) => {
