@@ -6,16 +6,26 @@ const jwt = require('jsonwebtoken');
 const WebSocket = require('ws');
 const http = require('http');
 const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+
+
 app.use(express.json());
 app.use(cors({
   origin: 'http://localhost:3000',
   methods: ['GET', 'POST'],
   credentials:true
 }));
+
+// Правила для ограничения трафика, чтоб предотвратить уязвимость
+const apiLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 минут
+  max: 100, // ограничение каждого IP до 100 запросов в windowMs
+  message: 'Too many requests from this IP, please try again after 15 minutes'
+});
 
 const PORT = process.env.PORT || 5000;
 const httpServer = app.listen(PORT, () => {
@@ -342,7 +352,7 @@ const io = require('socket.io')(httpServer, {
 });
 
 
-app.post('/api/rooms', async (req, res) => {
+app.post('/api/rooms', apiLimiter, async (req, res) => {
   const token = req.headers.authorization.split(' ')[1];
   const decodedToken = jwt.verify(token, secretKey);
   console.log('Decoded token:', decodedToken);
