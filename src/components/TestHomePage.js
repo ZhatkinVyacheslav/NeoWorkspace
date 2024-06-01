@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "./../css/RegistrationPage.module.css";
 import axios from 'axios';
-import { Navigate } from 'react-router-dom';
+import {Navigate, useNavigate} from 'react-router-dom';
 
 class TestHomePage extends React.Component {
   state = {
@@ -17,10 +17,9 @@ class TestHomePage extends React.Component {
   }
 
   componentDidMount() {
-    // Получаем значение user из localStorage при монтировании компонента
     const user = localStorage.getItem('user');
     if (user) {
-      this.setState({ field1Value: user }); // Устанавливаем значение поля
+      this.setState({ field1Value: user });
     }
   }
 
@@ -55,6 +54,10 @@ class TestHomePage extends React.Component {
     }
   }
 
+  handleRoomTest = () => {
+    this.props.navigate('/room');
+  }
+
   handleCheckSession = async () => {
     const token = localStorage.getItem('token');
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -70,25 +73,33 @@ class TestHomePage extends React.Component {
       this.setState({ redirectToLogin: true });
     }
   }
+  if (redirectToLogin) {
+    return <Navigate to="/" replace />;
+  }
   render() {
     if (this.state.redirectToLogin) {
       return <Navigate to="/" replace />;
     }
     return (
-      <div>
-        <form className={styles.form} onSubmit={this.handleLogout}>
-          <h1>Тестовая страничка</h1>
-          <label>
-            Логин пользователя:
-            <input type="text" name="field1" value={this.state.field1Value} className={styles.formControl} readOnly />
-          </label>
-          <button type="submit" className={styles.submitButton}>Выйти из сессии</button>
-          <button type="button" className={styles.submitButton} onClick={this.handleCheckSession}>Проверить активность сессии</button>
-          {this.state.sessionStatus && <p>{this.state.sessionStatus}</p>}
-        </form>
-      </div>
+        <div>
+          <form className={styles.form} onSubmit={this.handleLogout}>
+            <h1>Тестовая страничка</h1>
+            <label>
+              Логин пользователя:
+              <input type="text" name="field1" value={this.state.field1Value} className={styles.formControl} readOnly />
+            </label>
+            <button type="submit" className={styles.submitButton}>Выйти из сессии</button>
+            <button type="button" className={styles.submitButton} onClick={this.handleCheckSession}>Проверить активность сессии</button>
+            <button type="button" className={styles.submitButton} onClick={this.handleRoomTest}>Тестирование комнат</button>
+            {this.state.sessionStatus && <p>{this.state.sessionStatus}</p>}
+          </form>
+        </div>
     );
   }
 }
 
-export default TestHomePage;
+export default function(props) {
+  const navigate = useNavigate();
+
+  return <TestHomePage {...props} navigate={navigate} />;
+}
