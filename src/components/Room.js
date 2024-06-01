@@ -83,7 +83,6 @@ const Room = () => {
     }
   };
 
-
   return (
       <div>
         <h1>Welcome to the Room System Test Page</h1>
