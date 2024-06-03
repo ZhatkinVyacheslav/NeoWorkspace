@@ -92,15 +92,14 @@ async function createTables() {
     PRIMARY KEY (roomID, userID)
   );
 `);
-
         await client.query(`
-      CREATE TABLE IF NOT EXISTS project_stages (
-        stageID SERIAL PRIMARY KEY,
-        roomID VARCHAR(255) REFERENCES rooms(roomID),
-        stageName VARCHAR(255) NOT NULL
-      );
-    `);
-
+  CREATE TABLE IF NOT EXISTS project_stages (
+    stageID SERIAL PRIMARY KEY,
+    projectID VARCHAR(255) REFERENCES rooms(roomID),
+    stageName VARCHAR(255) NOT NULL,
+    weight INTEGER NOT NULL
+  );
+`);
         client.release();
     } catch (err) {
         console.error(err);

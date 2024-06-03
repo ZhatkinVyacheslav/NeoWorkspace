@@ -9,7 +9,10 @@ const Room = () => {
   const [userPermissions, setUserPermissions] = useState(null);
   const [joinRoomCode, setJoinRoomCode] = useState(localStorage.getItem('roomCode') || '');
   const [projectName, setProjectName] = useState(null);
+  const [stages, setStages] = useState([]);
   const [currentProjectName, setCurrentProjectName] = useState(null);
+  const [newStageName, setNewStageName] = useState('');
+  const [newStageWeight, setNewStageWeight] = useState('');
   const socket = useRef();
 
   useEffect(() => {
@@ -30,8 +33,22 @@ const Room = () => {
       if (storedRoomCode && storedUserID) {
         console.log('Automatically joining room:', storedRoomCode);
         socket.current.emit('join', { userID: storedUserID, roomCode: storedRoomCode });
+
+        // Fetch the stages of the current project
+        fetch(`/api/stages?roomID=${storedRoomCode}`)
+            .then(response => response.json())
+            .then(data => setStages(data))
+            .catch(error => console.error('Error:', error));
       }
     });
+
+    if (roomCode) {
+      // Fetch the stages of the current project
+      fetch(`/api/stages?roomID=${roomCode}`)
+          .then(response => response.json())
+          .then(data => setStages(data))
+          .catch(error => console.error('Error:', error));
+    }
 
     socket.current.on('message', (message) => {
       console.log(message);
@@ -63,7 +80,7 @@ const Room = () => {
           return prevUsers;
         }
       });
-    });
+    }, [roomCode]);
 
     socket.current.on('user-id', (data) => {
       console.log('Received user ID from server:', data.userID);
@@ -88,11 +105,24 @@ const Room = () => {
       console.log('Received join event from server:', data.roomCode, data.projectName);
       setRoomCode(data.roomCode);
       setCurrentProjectName(data.projectName);
+
+      // Emit the 'fetch-stages' event to fetch the stages of the current project
+      socket.current.emit('fetch-stages', { roomCode: data.roomCode });
+    });
+
+    // Listen for the 'fetch-stages-response' event and update the stages state
+    socket.current.on('fetch-stages-response', (data) => {
+      const stages = data.stages.map(stage => ({
+        name: stage.stagename,
+        weight: stage.weight
+      }));
+      setStages(stages);
     });
 
     socket.current.on('set-project', (data) => {
       console.log('Received set-project event from server:', data.projectName);
       setCurrentProjectName(data.projectName);
+      setStages(data.stages || []);
     });
 
     socket.current.on('disconnect', (message) => {
@@ -128,8 +158,17 @@ const Room = () => {
 
   const setProject = () => {
     if (socket.current && projectName) {
+      const confirmChange = window.confirm('Changing the project will delete the current one. Are you sure you want to proceed?');
+      if (!confirmChange) {
+        return;
+      }
+
+      console.log('Socket connected, emitting delete-stages event');
+      socket.current.emit('delete-stages', { roomCode });
+
       console.log('Socket connected, emitting set-project event');
-      socket.current.emit('set-project', { roomCode, projectName });
+      const stagesToSend = stages || [];
+      socket.current.emit('set-project', { roomCode, projectName, stages: stagesToSend });
     }
   };
 
@@ -146,6 +185,42 @@ const Room = () => {
     }
   };
 
+  const submitStages = () => {
+    if (socket.current) {
+      console.log('Socket connected, emitting add-stages event');
+      socket.current.emit('add-stages', { roomCode, stages });
+
+      // Listen for the response from the server
+      socket.current.on('add-stages-response', (data) => {
+        if (data.success) {
+          console.log('Stages added successfully');
+        } else {
+          console.error('Failed to add stages:', data.message);
+        }
+      });
+    }
+  };
+
+  const addStageField = () => {
+    setStages(prevStages => [...prevStages, { name: '', weight: '' }]);
+  };
+
+  const handleStageChange = (index, field, value) => {
+    setStages(prevStages => prevStages.map((stage, i) => i === index ? { ...stage, [field]: value } : stage));
+  };
+
+  const calculateProjectProgress = () => {
+    if (!stages) {
+      return 0; // Return a default value if stages is not defined
+    }
+
+    const completedStages = stages.filter(stage => stage.isCompleted);
+    const totalWeight = stages.reduce((total, stage) => total + stage.weight, 0);
+    const completedWeight = completedStages.reduce((total, stage) => total + stage.weight, 0);
+
+    return (completedWeight / totalWeight) * 100; // Returns the progress as a percentage
+  };
+
   return (
       <div>
         <h1>Welcome to the Room System Test Page</h1>
@@ -153,9 +228,33 @@ const Room = () => {
         <input type="text" value={roomCode || ''} disabled/>
         <button onClick={createRoom} disabled={!isConnected || !userID || userPermissions > 1}>Create Room</button>
         <h2>Current Project: {currentProjectName || 'None'}</h2>
+        {currentProjectName && (
+            <div>
+              <h3>Project Stages:</h3>
+              <ul>
+                {stages ? stages.map((stage, index) => (
+                    <li key={index}>
+                      {stage.name}: {stage.weight}
+                    </li>
+                )) : <li>No stages defined</li>}
+              </ul>
+            </div>
+        )}
         <h2><input type="text" value={projectName || ''} onChange={e => setProjectName(e.target.value)}
                    placeholder="Enter project name"/>
           <button onClick={setProject} disabled={!isConnected || !roomCode}>Set Project</button>
+          <h2>Add Stages:</h2>
+          {stages.map((stage, index) => (
+              <div key={index}>
+                <input type="text" value={stage.name} onChange={e => handleStageChange(index, 'name', e.target.value)}
+                       placeholder="Enter stage name"/>
+                <input type="number" value={stage.weight}
+                       onChange={e => handleStageChange(index, 'weight', e.target.value)}
+                       placeholder="Enter stage weight"/>
+              </div>
+          ))}
+          <button onClick={addStageField}>+</button>
+          <button onClick={submitStages}>Submit Stages</button>
         </h2>
         <h2>{isConnected ? `Connected to room ${roomCode}` : 'Not connected to room'}</h2>
         <input type="text" value={joinRoomCode} onChange={e => setJoinRoomCode(e.target.value)}
