@@ -5,18 +5,21 @@ import "./../css/style.css";
 class StageIformation extends Component {
   state = {};
   render() {
-    const { selectedItem } = this.props;
+    const { selectedStage } = this.props;
 
-    // if (!selectedItem) {
-    //   return (
-    //     <div className="project-informations-container">
-    //       <div className="text-redactor"></div>
-    //       <div className="attached-files-container">
-    //         <span className="attached-files-text">Прикреплённые файлы</span>
-    //       </div>
-    //     </div>
-    //   );
-    // }
+    if (!selectedStage) {
+      return (
+        <div className="project-informations-container">
+          <div className="text-redactor">
+            <h1>Выберите этап для просмотра информации о нём</h1>
+          </div>
+          <div className="attached-files-container">
+            <span className="attached-files-text">Прикреплённые файлы</span>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="project-informations-container">
         <div className="text-redactor">

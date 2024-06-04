@@ -5,11 +5,12 @@ import Projectblock from "./ProjectBlock";
 import AddRoomFormDialog from "./AddRoomFormDalog";
 
 class ProjectsSpace extends React.Component {
-  state = {
-    selectedItem: null,
-    componentProjects: [],
-    open: false,
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      selectedIndex: null,
+    };
+  }
 
   handleClickOpen = () => {
     this.setState({ open: true });
@@ -24,22 +25,25 @@ class ProjectsSpace extends React.Component {
     console.log(`Отправлен код комнаты: ${roomCode}`);
   };
 
+  handleClickSelected = (index, text) => {
+    this.setState({ selectedIndex: index });
+    this.props.onSelect(text);
+  }
+
   componentDidMount() {
     const fetchedProjectName = ["Проект1", "Проект2"];
     const fetchedProjectPercent = [38, 66];
-    let componentProjects = fetchedProjectName.map((ProjectsName1, index) => (
+    let componentProjects = fetchedProjectName.map((projectsName1, index) => (
       <Projectblock
         key={index}
-        nameProject={ProjectsName1}
+        nameProject={projectsName1}
+        onClick={() => this.handleClickSelected(index, projectsName1)}
+        className={this.state.selectedIndex === index ? 'selected' : ''}
         persentProject={fetchedProjectPercent[index]}
       />
     ));
     this.setState({ componentProjects });
   }
-
-  handleItemSelect = (item) => {
-    this.setState({ selectedItem: item });
-  };
 
   render() {
     return (

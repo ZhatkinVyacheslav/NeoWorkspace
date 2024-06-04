@@ -2,7 +2,6 @@ import React from "react";
 import "../css/style.css";
 import axios from "axios";
 import { Navigate } from "react-router-dom";
-import Projectblock from "./ProjectBlock";
 import ProjectsSpace from "./ProjectsSpace";
 import Header from "./Header";
 import StageProjects from "./StageProjects";
@@ -12,37 +11,20 @@ class TestHomePage extends React.Component {
   state = {
     sessionStatus: null,
     redirectToLogin: false,
-    componentProjects: [],
+    selectedName: '',
     selectedItem: false,
   };
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      field1Value: "",
-    };
-  }
-
   componentDidMount() {
-    const fetchedProjectName = ["Проект1", "Проект2"];
-    const fetchedProjectPercent = [38, 66];
-    let componentProjects = fetchedProjectName.map((ProjectsName1, index) => (
-      <Projectblock
-        key={index}
-        nameProject={ProjectsName1}
-        persentProject={fetchedProjectPercent[index]}
-      />
-    ));
-    this.setState({ componentProjects });
-
     const user = localStorage.getItem("user");
     if (user) {
       this.setState({ field1Value: user });
     }
   }
 
-  handleItemSelect = (item) => {
-    this.setState({ selectedItem: item });
+  handleSelectProject = (projectName) => {
+    this.setState({ selectedName: projectName });
+    this.setState({ selectedItem: true});
   };
 
   handleLogout = async (event) => {
@@ -95,22 +77,21 @@ class TestHomePage extends React.Component {
   };
 
   render() {
-    const { selectedItem } = this.state;
-    if (this.state.redirectAfterLogin) {
+    const { selectedName } = this.state;
+    if (this.state.redirectToLogin) {
       return <Navigate to="/TestHomePage" replace />;
     }
     return (
       <div className="full-screen-container">
         <div className="home-container">
           <Header />
-          <ProjectsSpace onItemSelect={this.handleItemSelect} />
-          <StageIformation selectedItem={selectedItem} />
-          <StageProjects selectedItem={selectedItem} mainText="Пример1" projectCode="Новый код"/>
+          <ProjectsSpace onSelect={this.handleSelectProject} />
+          <StageIformation selectedItem={selectedName} />
+          <StageProjects nameProject={selectedName} selected={this.state.selectedItem} projectCode="Новый код"/>
         </div>
       </div>
     );
   }
-  defaults;
 }
 
 export default TestHomePage;

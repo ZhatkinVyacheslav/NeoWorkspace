@@ -1,11 +1,11 @@
 import React from "react";
 import "./../css/style.css";
 
-function Projectblock(props) {
+function Projectblock({ nameProject, persentProject, onClick, className }) {
   return (
-    <div class="project">
-      <span className="project-name">{props.nameProject}</span>
-      <span className="project-name">{props.persentProject}%</span>
+    <div className={`project ${className}`} onClick={onClick}>
+      <span className="project-name">{nameProject}</span>
+      <span className="project-name">{persentProject}%</span>
     </div>
   );
 }

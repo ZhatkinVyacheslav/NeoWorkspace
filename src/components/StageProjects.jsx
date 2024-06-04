@@ -36,13 +36,21 @@ class StageProjects extends Component {
   };
 
   render() {
-    const { mainText, projectCode } = this.props;
+    const {nameProject, projectCode, selectedProject} = this.props;
+
+    // if(selectedProject == null){
+    //   return(
+    //     <div className="stage-container">
+    //       <span className="main-text">Выберите проект...</span>
+    //     </div>
+    //   )
+    // }
 
     return (
       <div className="stage-container">
         <div className="main-stage-content">
           <div className="project-and-icons">
-            <span className="main-text">{mainText}</span>
+            <span className="main-text">{nameProject}</span>
             <div className="project-icons">
               <button onClick={this.handleClickOpen} className="hidden-button">
                 <GroupUsers className="group_users-img"></GroupUsers>
@@ -59,20 +67,7 @@ class StageProjects extends Component {
             <Plus className="plus-img"></Plus>
           </div>
           <div className="stages">
-            {" "}
             {this.state.componentSNaS}
-            {/* <StatusAndStageName
-              iconType="green"
-              stageName="Пример сделанного вовремя"
-            />
-            <StatusAndStageName
-              iconType="red" 
-              stageName="Пример просроченного" 
-            />
-            <StatusAndStageName
-              iconType="yellow"
-              stageName="Пример в процессе выполнения"
-            /> */}
           </div>
         </div>
         <div className="Project-code">
