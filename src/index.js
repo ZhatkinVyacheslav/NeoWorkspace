@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import RegistrationPage from './RegistrationPage';
+import LoginPage from './components/LoginPage';
+import Room from './components/Room';
 
-// Рендерим компонент HelloWorld в DOM
-ReactDOM.render(<RegistrationPage />, document.getElementById('root'));
+const root = document.getElementById('root');
+ReactDOM.createRoot(root).render(<LoginPage />);
