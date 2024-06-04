@@ -11,6 +11,7 @@ class TestHomePage extends React.Component {
   state = {
     sessionStatus: null,
     redirectToLogin: false,
+user = localStorage.getItem('user');
     selectedName: '',
     selectedItem: false,
   };
@@ -21,7 +22,6 @@ class TestHomePage extends React.Component {
       this.setState({ field1Value: user });
     }
   }
-
   handleSelectProject = (projectName) => {
     this.setState({ selectedName: projectName });
     this.setState({ selectedItem: true});
