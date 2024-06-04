@@ -97,7 +97,8 @@ async function createTables() {
     stageID SERIAL PRIMARY KEY,
     projectID VARCHAR(255) REFERENCES rooms(roomID),
     stageName VARCHAR(255) NOT NULL,
-    weight INTEGER NOT NULL
+    weight INTEGER NOT NULL,
+    completed BOOLEAN DEFAULT FALSE
   );
 `);
         client.release();

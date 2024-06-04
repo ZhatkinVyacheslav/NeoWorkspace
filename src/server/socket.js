@@ -15,31 +15,6 @@ const pool = new Pool({
 const rooms = new Map(); // Define rooms map
 const connectedUsers = new Map();
 
-async function addStage(roomCode, stageName, weight) {
-    const client = await pool.connect();
-    try {
-        // Check if the roomcode exists in the rooms table
-        const room = await client.query('SELECT * FROM rooms WHERE roomcode = $1', [roomCode]);
-        if (room.rows.length === 0) {
-            console.error(`Room with code ${roomCode} does not exist`);
-            return;
-        }
-
-        // Get the roomid from the room
-        const roomid = room.rows[0].roomid;
-
-        const query = `
-        INSERT INTO project_stages (projectid, stagename, weight)
-        VALUES ($1, $2, $3)
-        `;
-        await client.query(query, [roomid, stageName, weight]);
-    } catch (error) {
-        console.error('Error adding stage:', error);
-    } finally {
-        client.release();
-    }
-}
-
 module.exports = function(server) {
     const io = socketIo(server, {
         cors: {
@@ -106,8 +81,8 @@ module.exports = function(server) {
                 // Generate a unique room ID
                 const roomID = crypto.randomBytes(16).toString('hex');
 
-                // Generate a room code
-                const roomCode = crypto.randomBytes(3).toString('hex');
+                // Generate a room code with capital letters
+                const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
 
                 // Store the room in the database
                 await client.query('INSERT INTO rooms (roomID, roomCode, teacherID, projectName) VALUES ($1, $2, $3, $4)', [roomID, roomCode, userID, projectName]);
@@ -157,13 +132,41 @@ module.exports = function(server) {
         socket.on('add-stages', async (data) => {
             const { roomCode, stages } = data;
 
-            for (const stage of stages) {
-                try {
-                    await addStage(roomCode, stage.name, stage.weight);
-                } catch (error) {
-                    console.error('Error adding stage:', error);
+            // Fetch the room's ID from the database using the room code
+            const client = await pool.connect();
+            const room = await client.query('SELECT * FROM rooms WHERE roomCode = $1', [roomCode]);
+
+            if (room.rows.length > 0) {
+                const roomID = room.rows[0].roomid;
+
+                // Process each stage
+                for (let i = 0; i < stages.length; i++) {
+                    const stage = stages[i];
+                    // Check if the stage already exists in the database
+                    const existingStage = await client.query(`
+        SELECT * FROM project_stages
+        WHERE projectid = $1 AND stagename = $2
+      `, [roomID, stage.name]);
+
+                    if (existingStage.rows.length > 0) {
+                        // If the stage exists, update its 'completed' state
+                        await client.query(`
+          UPDATE project_stages
+          SET completed = $1
+          WHERE projectid = $2 AND stagename = $3
+        `, [stage.completed, roomID, stage.name]);
+                    } else {
+                        // If the stage doesn't exist, insert it as a new stage
+                        await client.query(`
+          INSERT INTO project_stages (projectid, stagename, weight, completed)
+          VALUES ($1, $2, $3, $4)
+        `, [roomID, stage.name, stage.weight, stage.completed]);
+                    }
                 }
+            } else {
+                console.log(`No room found with code: ${roomCode}`);
             }
+            client.release();
         });
 
         socket.on('fetch-stages', async (data) => {
@@ -237,8 +240,11 @@ module.exports = function(server) {
                     socket.emit('user-joined', {user: {id: roomUserID, name: roomUser.rows[0].login}});
                 }
 
-                // Emit the 'join' event with the room code and project name
-                socket.emit('join', { roomCode, projectName });
+                // Fetch the current state of all stages from the database using the getStages function
+                const stages = await getStages(roomID);
+
+                // Emit the 'join' event with the room code, project name and stages
+                socket.emit('join', { roomCode, projectName, stages });
             } else {
                 console.log(`No room found with code: ${roomCode}`);
             }
@@ -262,12 +268,11 @@ module.exports = function(server) {
 };
 
 
-
 const getStages = async (roomID) => {
     const client = await pool.connect();
     try {
         const res = await client.query(`
-      SELECT stageName, weight
+      SELECT stageName, weight, completed
       FROM project_stages
       WHERE projectid = $1
     `, [roomID]);

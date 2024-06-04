@@ -110,11 +110,20 @@ const Room = () => {
       socket.current.emit('fetch-stages', { roomCode: data.roomCode });
     });
 
-    // Listen for the 'fetch-stages-response' event and update the stages state
+    socket.current.on('join-response', (data) => {
+      console.log('Received join-response event from server:', data.stages);
+      setStages(data.stages.map(stage => ({
+        name: stage.stagename,
+        weight: stage.weight,
+        completed: stage.completed || false // Treat null as false
+      })));
+    });
+
     socket.current.on('fetch-stages-response', (data) => {
       const stages = data.stages.map(stage => ({
         name: stage.stagename,
-        weight: stage.weight
+        weight: stage.weight,
+        completed: stage.completed || false // Treat null as false
       }));
       setStages(stages);
     });
@@ -131,13 +140,15 @@ const Room = () => {
     });
 
     return () => {
-      socket.current.close();
+      if (socket.current) {
+        socket.current.off('join-response');
+      }
     };
-  }, []);
+  }, [roomCode]);
 
   const createRoom = () => {
     const token = localStorage.getItem('token');
-    const projectName = 'yourProjectName';
+    const projectName = 'None';
 
     if (socket.current) {
       console.log('Socket connected, emitting create-room event');
@@ -146,6 +157,15 @@ const Room = () => {
       socket.current.on('room-created', (data) => {
         console.log('Received room code from server:', data.roomCode);
         setRoomCode(data.roomCode);
+      });
+
+      socket.current.on('join-response', (data) => {
+        console.log('Received join-response event from server:', data.stages);
+        setStages(data.stages.map(stage => ({
+          name: stage.stagename,
+          weight: stage.weight,
+          completed: stage.completed
+        })));
       });
 
       socket.current.on('error', (data) => {
@@ -188,6 +208,16 @@ const Room = () => {
   const submitStages = () => {
     if (socket.current) {
       console.log('Socket connected, emitting add-stages event');
+
+      // Check for duplicate stage names
+      const stageNames = stages.map(stage => stage.name);
+      const hasDuplicates = stageNames.some((name, index) => stageNames.indexOf(name) !== index);
+
+      if (hasDuplicates) {
+        console.error('Cannot add stages: duplicate stage names detected');
+        return;
+      }
+
       socket.current.emit('add-stages', { roomCode, stages });
 
       // Listen for the response from the server
@@ -207,18 +237,18 @@ const Room = () => {
 
   const handleStageChange = (index, field, value) => {
     setStages(prevStages => prevStages.map((stage, i) => i === index ? { ...stage, [field]: value } : stage));
+
+    // If the 'completed' field changed, emit an event to the server
+    if (field === 'completed' && socket.current) {
+      socket.current.emit('stage-completed-changed', { roomCode, stageIndex: index, completed: value });
+    }
   };
 
   const calculateProjectProgress = () => {
-    if (!stages) {
-      return 0; // Return a default value if stages is not defined
-    }
+    const totalWeight = stages.reduce((total, stage) => total + Number(stage.weight), 0);
+    const completedWeight = stages.reduce((total, stage) => total + (stage.completed ? Number(stage.weight) : 0), 0);
 
-    const completedStages = stages.filter(stage => stage.isCompleted);
-    const totalWeight = stages.reduce((total, stage) => total + stage.weight, 0);
-    const completedWeight = completedStages.reduce((total, stage) => total + stage.weight, 0);
-
-    return (completedWeight / totalWeight) * 100; // Returns the progress as a percentage
+    return (completedWeight / totalWeight) * 100;
   };
 
   return (
@@ -228,13 +258,14 @@ const Room = () => {
         <input type="text" value={roomCode || ''} disabled/>
         <button onClick={createRoom} disabled={!isConnected || !userID || userPermissions > 1}>Create Room</button>
         <h2>Current Project: {currentProjectName || 'None'}</h2>
+        <p>Completed: {calculateProjectProgress()}%</p>
         {currentProjectName && (
             <div>
               <h3>Project Stages:</h3>
               <ul>
                 {stages ? stages.map((stage, index) => (
                     <li key={index}>
-                      {stage.name}: {stage.weight}
+                      {stage.name}: {stage.weight} {stage.completed ? "(Completed)" : "(Not Completed)"}
                     </li>
                 )) : <li>No stages defined</li>}
               </ul>
@@ -251,6 +282,8 @@ const Room = () => {
                 <input type="number" value={stage.weight}
                        onChange={e => handleStageChange(index, 'weight', e.target.value)}
                        placeholder="Enter stage weight"/>
+                <input type="checkbox" checked={stage.completed}
+                       onChange={e => handleStageChange(index, 'completed', e.target.checked)}/>
               </div>
           ))}
           <button onClick={addStageField}>+</button>
