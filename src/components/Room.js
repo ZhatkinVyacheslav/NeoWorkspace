@@ -11,8 +11,6 @@ const Room = () => {
   const [projectName, setProjectName] = useState(null);
   const [stages, setStages] = useState([]);
   const [currentProjectName, setCurrentProjectName] = useState(null);
-  const [newStageName, setNewStageName] = useState('');
-  const [newStageWeight, setNewStageWeight] = useState('');
   const socket = useRef();
 
   useEffect(() => {
