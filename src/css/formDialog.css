@@ -1,0 +1,179 @@
+.formDialogOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.formDialogContainer {
+  background-color: #454545;
+  padding: 20px;
+  border-radius: 10px;
+  position: relative;
+  width: 460px;
+  display: grid;
+  outline: 2px solid transparent;
+  outline-color: #00d0dd;
+  gap: 14px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.close-and-text {
+  display: flex;
+  justify-content: space-between;
+}
+
+.main-text-form {
+  margin-left: 14px;
+  font-family: "Ubuntu", sans-serif;
+  font-size: 30px;
+  color: white;
+  text-indent: 0;
+  margin: 0;
+}
+
+.search {
+  width: calc(100% - 28px);
+  height: 200%;
+}
+
+.input-search-container {
+  display: flex;
+  justify-content: space-between;
+  width: calc(100% - 28px);
+  height: 30px;
+  background-color: #2d2d2d;
+  border-radius: 20px;
+  outline-color: #8e8e8e;
+}
+
+.input-search2 {
+  background-color: #2d2d2d;
+  border: none;
+  color: white;
+  border: none;
+  height: calc(100% - 2px);
+  outline: none;
+  flex-grow: 1;
+  border-radius: 20px;
+}
+
+.form-search2 {
+  display: flex;
+  justify-content: space-between;
+  background-color: #2d2d2d;
+  border-radius: 20px;
+  margin-left: 14px;
+  width: calc(100% - 28px);
+  height: 100%;
+}
+
+.search-projects2 {
+  width: calc(100% - 28px);
+  height: 36px;
+  background-color: #2d2d2d;
+  border-radius: 20px;
+  margin-right: 14px;
+  border: 1px solid #8e8e8e;
+}
+
+/* Стили к Участникам проекта */
+
+.UsersDialogOverlay {
+  position: fixed;
+  top: 218px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.users-container {
+  background-color: #454545;
+  outline: 2px solid transparent;
+  outline-color: #00d0dd;
+  display: block;
+  padding: 14px;
+  border-radius: 10px;
+  width: 344px;
+  height: 300px;
+  position: relative; /* Добавляем для позиционирования кнопки закрытия */
+}
+
+.close-and-text1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Выравниваем по вертикали */
+}
+
+.modal-close1 {
+  font-size: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: absolute; /* Позиционируем кнопку в правом верхнем углу */
+  top: 10px;
+  right: 10px;
+}
+
+.users-and-icon1 {
+  display: flex;
+  align-items: center; /* Выравниваем по вертикали */
+  justify-content: space-between; /* Распределяем элементы по ширине */
+}
+
+.plus-users-icon1 {
+  margin: 0;
+}
+
+.main-text1 {
+
+  font-family: "Ubuntu", sans-serif;
+  font-size: 30px;
+  color: white;
+  text-indent: 0;
+  margin: 0;
+}
+
+.avatar-user1{
+  display: flex;
+  margin-top: 14px;
+}
+
+.Name-and-role{
+  display: flex;
+  flex-direction: column;
+  margin-left: 4px;
+}
+
+.Name-user{
+  font-family: "Ubuntu", sans-serif;
+  font-size: 18px;
+  color: white;
+  text-indent: 0;
+  margin: 0;
+}
+
+.Role-user{
+  font-family: "Ubuntu", sans-serif;
+  font-size: 14px;
+  color: #8e8e8e;
+  text-indent: 0;
+  margin: 0;
+}

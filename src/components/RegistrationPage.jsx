@@ -26,6 +26,7 @@ class RegistrationPage extends Component {
     event.preventDefault();
     console.log('Submit pressed');
     let { login, password, confirmpassword, permissions } = this.state;
+
     if (password !== confirmpassword) {
       alert('Пароли не совпадают');
       return;
