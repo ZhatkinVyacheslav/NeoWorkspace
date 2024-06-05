@@ -11,9 +11,9 @@ class TestHomePage extends React.Component {
   state = {
     sessionStatus: null,
     redirectToLogin: false,
-user = localStorage.getItem('user');
+    user: localStorage.getItem('user'),
     selectedName: '',
-    selectedItem: false,
+    selectedProject: false,
   };
 
   componentDidMount() {
@@ -24,7 +24,7 @@ user = localStorage.getItem('user');
   }
   handleSelectProject = (projectName) => {
     this.setState({ selectedName: projectName });
-    this.setState({ selectedItem: true});
+    this.setState({ selectedProject: true});
   };
 
   handleLogout = async (event) => {
@@ -87,7 +87,7 @@ user = localStorage.getItem('user');
           <Header />
           <ProjectsSpace onSelect={this.handleSelectProject} />
           <StageIformation selectedItem={selectedName} />
-          <StageProjects nameProject={selectedName} selected={this.state.selectedItem} projectCode="Новый код"/>
+          <StageProjects nameProject={selectedName} selectedProject={this.state.selectedProject} projectCode="Новый код"/>
         </div>
       </div>
     );

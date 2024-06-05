@@ -38,13 +38,13 @@ class StageProjects extends Component {
   render() {
     const {nameProject, projectCode, selectedProject} = this.props;
 
-    // if(selectedProject == null){
-    //   return(
-    //     <div className="stage-container">
-    //       <span className="main-text">Выберите проект...</span>
-    //     </div>
-    //   )
-    // }
+    if(!selectedProject){
+      return(
+        <div className="stage-container">
+          <span className="main-text">Выберите проект...</span>
+        </div>
+      )
+    }
 
     return (
       <div className="stage-container">
