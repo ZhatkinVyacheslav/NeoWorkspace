@@ -9,21 +9,18 @@ class UserInProject extends React.Component {
     componentUsers: [],
   };
 
-  componentDidMount() {
-    const fetchedUserName = [
-      "Андрей Карагодин",
-      "Жаткин Вячеслав",
-      "Иван Петров",
-    ];
-    const fetchedUserRole = ["Backend", "Frontend", "Преподаватель"];
-    let componentUsers = fetchedUserName.map((ProjectsName1, index) => (
-      <User
-        key={index}
-        userName={ProjectsName1}
-        userRole={fetchedUserRole[index]}
-      />
-    ));
-    this.setState({ componentUsers });
+  static getDerivedStateFromProps(nextProps, prevState) {
+    if (nextProps.users && nextProps.users !== prevState.componentUsers) {
+      let componentUsers = nextProps.users.map((user, index) => (
+          <User
+              key={index}
+              userName={user.name}
+              userRole={user.role}
+          />
+      ));
+      return { componentUsers };
+    }
+    return null;
   }
 
   render() {
@@ -32,22 +29,22 @@ class UserInProject extends React.Component {
     if (!isOpen) return null;
 
     return (
-      <div className="UsersDialogOverlay">
-        <div className="users-container">
-          <div className="close-and-text1">
-            <div className="users-and-icon1">
-              <span className="main-text1">Участники проекта</span>
-              <PlusB className="plus-users-icon1"></PlusB>
+        <div className="UsersDialogOverlay">
+          <div className="users-container">
+            <div className="close-and-text1">
+              <div className="users-and-icon1">
+                <span className="main-text1">Участники проекта</span>
+                <PlusB className="plus-users-icon1"></PlusB>
+              </div>
+              <button className="modal-close1" onClick={closeModal}>
+                &times;
+              </button>
             </div>
-            <button className="modal-close1" onClick={closeModal}>
-              &times;
-            </button>
-          </div>
-          <div className="users">
-            <div>{this.state.componentUsers}</div>
+            <div className="users">
+              <div>{this.state.componentUsers}</div>
+            </div>
           </div>
         </div>
-      </div>
     );
   }
 }

@@ -1,30 +1,265 @@
 import React from "react";
-import "../css/style.css";
+import io from 'socket.io-client';
 import axios from "axios";
 import { Navigate } from "react-router-dom";
 import ProjectsSpace from "./ProjectsSpace";
 import Header from "./Header";
 import StageProjects from "./StageProjects";
 import StageIformation from "./StageInformation";
+import AddRoomFormDialog from "./AddRoomFormDalog";
+
 
 class TestHomePage extends React.Component {
-  state = {
-    sessionStatus: null,
-    redirectToLogin: false,
-    user: localStorage.getItem('user'),
-    selectedName: '',
-    selectedProject: false,
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      sessionStatus: null,
+      redirectToLogin: false,
+      user: localStorage.getItem('user'),
+      selectedName: '',
+      selectedProject: false,
+      userID: null,
+      isConnected: false,
+      users: [],
+      roomCode: null,
+      userPermissions: null,
+      joinRoomCode: localStorage.getItem('roomCode') || '',
+      projectName: null,
+      stages: [],
+      currentProjectName: null,
+    };
+    this.socket = null;
+    this.handleStageChange = this.handleStageChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
 
   componentDidMount() {
     const user = localStorage.getItem("user");
     if (user) {
       this.setState({ field1Value: user });
     }
+
+    const token = localStorage.getItem('token');
+    this.socket = io('http://localhost:5000', {
+      query: { token }, // Pass the token as a query parameter
+      withCredentials: true
+    });
+
+    this.socket.on('connect', () => {
+      console.log('Connected to server');
+      this.setState({ isConnected: true });
+      this.socket.emit('user-id');
+
+      const storedRoomCode = localStorage.getItem('roomCode');
+      const storedUserID = localStorage.getItem('userID');
+      if (storedRoomCode && storedUserID) {
+        console.log('Automatically joining room:', storedRoomCode);
+        this.socket.emit('join', { userID: storedUserID, roomCode: storedRoomCode });
+      }
+    });
+
+    this.socket.on('message', (message) => {
+      console.log(message);
+    });
+
+    this.socket.on('user-joined', (data) => {
+      let parsedData;
+
+      if (typeof data === 'object' && data !== null) {
+        parsedData = data;
+      } else {
+        try {
+          parsedData = JSON.parse(data);
+        } catch (error) {
+          console.error('Error parsing JSON:', error);
+          return;
+        }
+      }
+
+      const user = parsedData.user;
+
+      this.setState(prevState => {
+        if (!prevState.users.find(u => u.id === user.id)) {
+          return { users: [...prevState.users, user] };
+        } else {
+          return prevState;
+        }
+      });
+    });
+
+    this.socket.on('user-id', (data) => {
+      console.log('Received user ID from server:', data.userID);
+      this.setState({ userID: data.userID, userPermissions: data.permissions });
+      console.log('User permissions:', data.permissions);
+    });
+
+    this.socket.on('room-users', (data) => {
+      console.log('Received room users and room code from server:', data.users, data.roomCode);
+      this.setState({ users: data.users, roomCode: data.roomCode });
+    });
+
+    this.socket.on('room-created', (data) => {
+      console.log('Received room code from server:', data.roomCode);
+      this.setState({ roomCode: data.roomCode, joinRoomCode: data.roomCode }, () => {
+        // Update the room code in local storage
+        localStorage.setItem('roomCode', data.roomCode);
+        // Automatically join the room after it is created
+        this.joinRoom();
+      });
+    });
+
+    this.socket.on('join', (data) => {
+      console.log('Received join event from server:', data.roomCode, data.projectName);
+      this.setState({ roomCode: data.roomCode, currentProjectName: data.projectName });
+    });
+
+    this.socket.on('join-response', (data) => {
+      console.log('Received join-response event from server:', data.stages);
+      this.setState({ stages: data.stages.map(stage => ({
+          name: stage.stagename,
+          weight: stage.weight,
+          completed: stage.completed || false // Treat null as false
+        })) });
+    });
+
+    this.socket.on('fetch-stages-response', (data) => {
+      const stages = data.stages.map(stage => ({
+        name: stage.stagename,
+        weight: stage.weight,
+        completed: stage.completed || false // Treat null as false
+      }));
+      this.setState({ stages: stages });
+    });
+
+    this.socket.on('set-project', (data) => {
+      console.log('Received set-project event from server:', data.projectName);
+      this.setState({ currentProjectName: data.projectName, stages: data.stages || [] });
+    });
+
+    this.socket.on('disconnect', (message) => {
+      console.log('Disconnected from server');
+      this.setState({ isConnected: false });
+    });
   }
+
+  createRoom = () => {
+    const token = localStorage.getItem('token');
+    const projectName = this.state.projectName;
+
+    if (this.socket) {
+      console.log('Socket connected, emitting create-room event');
+      this.socket.emit('create-room', { token, userID: this.state.userID, projectName });
+
+      this.socket.on('room-created', (data) => {
+        console.log('Received room code from server:', data.roomCode);
+        this.setState({ roomCode: data.roomCode }, () => {
+          // Automatically join the room after it is created
+          this.joinRoom();
+        });
+      });
+
+      this.socket.on('join-response', (data) => {
+        console.log('Received join-response event from server:', data.stages);
+        this.setState({ stages: data.stages.map(stage => ({
+            name: stage.stagename,
+            weight: stage.weight,
+            completed: stage.completed
+          })) });
+      });
+
+      this.socket.on('error', (data) => {
+        console.log('Received error from server:', data.message);
+        // Display the error message to the user
+        alert(data.message);
+      });
+    }
+  };
+
+  joinRoom = () => {
+    if (this.socket && this.state.joinRoomCode) {
+      console.log('Socket connected, emitting join event');
+      this.socket.emit('join', { userID: this.state.userID, roomCode: this.state.joinRoomCode });
+
+      // Store the room code in local storage
+      localStorage.setItem('roomCode', this.state.joinRoomCode);
+      // Update the room code and connection status
+      this.setState({ roomCode: this.state.joinRoomCode, isConnected: true });
+    }
+  };
+
+  calculateProjectProgress = () => {
+    const totalWeight = this.state.stages.reduce((total, stage) => total + Number(stage.weight), 0);
+    const completedWeight = this.state.stages.reduce((total, stage) => total + (stage.completed ? Number(stage.weight) : 0), 0);
+
+    return (completedWeight / totalWeight) * 100;
+  };
+
+  submitStages = () => {
+    if (this.socket) {
+      console.log('Socket connected, emitting submit-stages event');
+
+      // Check for duplicate stage names
+      const stageNames = this.state.stages.map(stage => stage.name);
+      const hasDuplicates = stageNames.some((name, index) => stageNames.indexOf(name) !== index);
+
+      if (hasDuplicates) {
+        console.error('Cannot submit stages: duplicate stage names detected');
+        return;
+      }
+
+      this.socket.emit('add-stages', { roomCode: this.state.roomCode, stages: this.state.stages });
+
+      // Listen for the response from the server
+      this.socket.on('add-stages-response', (data) => {
+        if (data.success) {
+          console.log('Stages submitted successfully');
+        } else {
+          console.error('Failed to submit stages:', data.message);
+        }
+      });
+    }
+  };
+
+  setProject = () => {
+    if (this.socket && this.state.projectName) {
+      const confirmChange = window.confirm('Changing the project will delete the current one. Are you sure you want to proceed?');
+      if (!confirmChange) {
+        return;
+      }
+
+      console.log('Socket connected, emitting delete-stages event');
+      this.socket.emit('delete-stages', { roomCode: this.state.roomCode });
+
+      console.log('Socket connected, emitting set-project event');
+      const stagesToSend = this.state.stages || [];
+      this.socket.emit('set-project', { roomCode: this.state.roomCode, projectName: this.state.projectName, stages: stagesToSend });
+    }
+  };
+
+  componentWillUnmount() {
+    if (this.socket) {
+      this.socket.off('join-response');
+    }
+  }
+
   handleSelectProject = (projectName) => {
     this.setState({ selectedName: projectName });
     this.setState({ selectedProject: true});
+  };
+
+  handleStageChange = (index) => {
+    this.setState(prevState => {
+      const stages = [...prevState.stages];
+      stages[index].completed = !stages[index].completed;
+      return { stages };
+    });
+  };
+
+  handleAddStage = (name, weight) => {
+    this.setState(prevState => {
+      const stages = [...prevState.stages, { name, weight, completed: false }];
+      return { stages };
+    });
   };
 
   handleLogout = async (event) => {
@@ -76,20 +311,60 @@ class TestHomePage extends React.Component {
     }
   };
 
+  handleSubmit = (inputValue) => {
+    if (this.state.userPermissions <= 1) {
+      // The user is creating a room
+      this.setState({ projectName: inputValue }, this.createRoom);
+    } else {
+      // The user is joining a room
+      this.setState({ joinRoomCode: inputValue }, this.joinRoom);
+    }
+  };
+
+  handleAddEmptyStage = () => {
+    this.setState(prevState => {
+      const stages = [...prevState.stages, { name: '', weight: '', completed: false }];
+      return { stages };
+    });
+  };
+
   render() {
     const { selectedName } = this.state;
     if (this.state.redirectToLogin) {
       return <Navigate to="/TestHomePage" replace />;
     }
     return (
-      <div className="full-screen-container">
-        <div className="home-container">
-          <Header />
-          <ProjectsSpace onSelect={this.handleSelectProject} />
-          <StageIformation selectedItem={selectedName} />
-          <StageProjects nameProject={selectedName} selectedProject={this.state.selectedProject} projectCode="Новый код"/>
+        <div className="full-screen-container">
+          <div className="home-container">
+            <Header />
+            <AddRoomFormDialog
+                isOpen={this.state.open}
+                onClose={this.handleClose}
+                onSubmit={this.handleSubmit}
+                userPermissions={this.state.userPermissions}
+            />
+            <ProjectsSpace
+                onSelect={this.handleSelectProject}
+                onSubmit={this.handleSubmit}
+                userPermissions={this.state.userPermissions}
+                projectName={this.state.currentProjectName}
+                roomCode={this.state.roomCode}
+                projectCompleteness={this.calculateProjectProgress()}
+            />
+            <StageIformation selectedItem={selectedName} />
+            <StageProjects
+                nameProject={selectedName}
+                selectedProject={this.state.selectedProject}
+                projectCode={this.state.roomCode}
+                stages={this.state.stages}
+                users={this.state.users}
+                onAddEmptyStage={this.handleAddEmptyStage}
+                onStageChange={this.handleStageChange}
+                onAddStage={this.handleAddStage}
+                submitStages={this.submitStages} // Pass the submitStages method as a prop
+            />
+          </div>
         </div>
-      </div>
     );
   }
 }
