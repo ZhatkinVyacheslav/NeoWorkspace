@@ -31,18 +31,34 @@ class ProjectsSpace extends React.Component {
   }
 
   componentDidMount() {
-    const fetchedProjectName = ["Проект1", "Проект2"];
-    const fetchedProjectPercent = [38, 66];
-    let componentProjects = fetchedProjectName.map((projectsName1, index) => (
-      <Projectblock
-        key={index}
-        nameProject={projectsName1}
-        onClick={() => this.handleClickSelected(index, projectsName1)}
-        className={this.state.selectedIndex === index ? 'selected' : ''}
-        persentProject={fetchedProjectPercent[index]}
-      />
-    ));
+    const { projectName, roomCode, projectCompleteness } = this.props;
+
+    let componentProjects = (
+        <Projectblock
+            nameProject={`${projectName} | ${roomCode}`}
+            persentProject={projectCompleteness}
+            onClick={() => this.handleClickSelected(0, projectName)}
+            className={this.state.selectedIndex === 0 ? 'selected' : ''}
+        />
+    );
+
     this.setState({ componentProjects });
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    if (
+        nextProps.projectName !== prevState.projectName ||
+        nextProps.roomCode !== prevState.roomCode ||
+        nextProps.projectCompleteness !== prevState.projectCompleteness
+    ) {
+      return {
+        projectName: nextProps.projectName,
+        roomCode: nextProps.roomCode,
+        projectCompleteness: nextProps.projectCompleteness
+      };
+    }
+    // Return null to indicate no change to state.
+    return null;
   }
 
   render() {
@@ -56,9 +72,10 @@ class ProjectsSpace extends React.Component {
               <PlusCircle alt="Plus Circle" className="plus-circle-img" />
             </button>
             <AddRoomFormDialog
-              isOpen={this.state.open}
-              onClose={this.handleClose}
-              onSubmit={this.handleSubmit}
+                isOpen={this.state.open}
+                onClose={this.handleClose}
+                onSubmit={this.props.onSubmit}
+                userPermissions={this.props.userPermissions}
             />
           </div>
         </div>
@@ -78,7 +95,12 @@ class ProjectsSpace extends React.Component {
         <div className="folder-projects">
           <div className="folder">
             <div className="folder-content1">
-              {this.state.componentProjects}
+              <Projectblock
+                  nameProject={`${this.state.projectName} | ${this.state.roomCode}`}
+                  persentProject={this.state.projectCompleteness}
+                  onClick={() => this.handleClickSelected(0, this.state.projectName)}
+                  className={this.state.selectedIndex === 0 ? 'selected' : ''}
+              />
             </div>
           </div>
         </div>

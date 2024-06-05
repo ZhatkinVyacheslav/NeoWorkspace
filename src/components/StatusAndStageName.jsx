@@ -1,32 +1,18 @@
-import React, { Component } from "react";
-import { Statusg } from "./IconsComponent";
-import { Statusy } from "./IconsComponent";
-import { Statusr } from "./IconsComponent";
+import React from "react";
 import "./../css/style.css";
+import { Statusg as GreenCircle, Statusr as RedCircle } from "./IconsComponent";
 
-function StatusAndStageName(props) {
-  let iconToRender;
-
-  switch (props.iconType) {
-    case "green":
-      iconToRender = <Statusg className="statusg-img"/>;
-      break;
-    case "red":
-      iconToRender = <Statusr className="statusr-img"/>;
-      break;
-    case "yellow":
-      iconToRender = <Statusy className="statusy-img"/>;
-      break;
-    default:
-      iconToRender = <Statusy className="statusy-img"/>;
-      break;
-  }
-
+function StatusAndStageName({ stageName, iconType, onChange, showCheckbox }) {
   return (
-    <div className="stages-component">
-      {iconToRender}
-      <span className="stage-text color-grey">{props.stageName}</span>
-    </div>
+      <div className="stage" style={{ display: 'flex', alignItems: 'center' }}>
+        {iconType === "green" ? (
+            <GreenCircle className="green-circle-img"></GreenCircle>
+        ) : (
+            <RedCircle className="red-circle-img"></RedCircle>
+        )}
+        <span className="stage-name">{stageName}</span>
+        {showCheckbox && <input type="checkbox" onChange={onChange} />}
+      </div>
   );
 }
 
