@@ -166,6 +166,7 @@ class TestHomePage extends React.Component {
         });
       } else {
         console.error('Failed to fetch projects:', data.message);
+        this.setState({ loading: false });
       }
       this.setState({ loading: false });
     });
