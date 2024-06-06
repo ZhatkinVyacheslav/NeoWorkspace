@@ -13,13 +13,13 @@ const createUsersTable = async () => {
     try {
         await client.query('BEGIN');
         await client.query(`
-        CREATE TABLE IF NOT EXISTS public.users (
-          ID SERIAL PRIMARY KEY,
-          Login VARCHAR(50) UNIQUE NOT NULL,
-          Password VARCHAR(100) NOT NULL,
-          Permissions VARCHAR(1) NOT NULL
-        )
-      `);
+            CREATE TABLE IF NOT EXISTS public.users (
+                                                        ID SERIAL PRIMARY KEY,
+                                                        Login VARCHAR(50) UNIQUE NOT NULL,
+                Password VARCHAR(100) NOT NULL,
+                Permissions VARCHAR(1) NOT NULL
+                )
+        `);
         await client.query('COMMIT');
         console.log('Table created');
     } catch (e) {
@@ -35,11 +35,11 @@ const createInvalidTokensTable = async () => {
     try {
         await client.query('BEGIN');
         await client.query(`
-        CREATE TABLE IF NOT EXISTS public.invalid_tokens (
-          ID SERIAL PRIMARY KEY,
-          Token VARCHAR(255) UNIQUE NOT NULL
-        )
-      `);
+            CREATE TABLE IF NOT EXISTS public.invalid_tokens (
+                                                                 ID SERIAL PRIMARY KEY,
+                                                                 Token VARCHAR(255) UNIQUE NOT NULL
+                )
+        `);
         await client.query('COMMIT');
         console.log('Invalid tokens table created');
     } catch (e) {
@@ -55,13 +55,13 @@ const createSessionTable = async () => {
     try {
         await client.query('BEGIN');
         await client.query(`
-        CREATE TABLE IF NOT EXISTS public.session (
-          ID SERIAL PRIMARY KEY,
-          Login VARCHAR(50) UNIQUE NOT NULL,
-          Password VARCHAR(100) NOT NULL,
-          Permissions VARCHAR(1) UNIQUE NOT NULL
-        )
-      `);
+            CREATE TABLE IF NOT EXISTS public.session (
+                                                          ID SERIAL PRIMARY KEY,
+                                                          Login VARCHAR(50) UNIQUE NOT NULL,
+                Password VARCHAR(100) NOT NULL,
+                Permissions VARCHAR(1) UNIQUE NOT NULL
+                )
+        `);
         await client.query('COMMIT');
         console.log('Table created');
     } catch (e) {
@@ -77,30 +77,30 @@ async function createTables() {
         const client = await pool.connect();
 
         await client.query(`
-  CREATE TABLE IF NOT EXISTS rooms (
-    roomID VARCHAR(255) PRIMARY KEY,
-    roomCode VARCHAR(6) NOT NULL,
-    teacherID INTEGER REFERENCES users(id),
-    projectName VARCHAR(255) NOT NULL
-  );
-`);
+            CREATE TABLE IF NOT EXISTS rooms (
+                                                 roomID VARCHAR(255) PRIMARY KEY,
+                roomCode VARCHAR(6) NOT NULL,
+                teacherID INTEGER REFERENCES users(id),
+                projectName VARCHAR(255) NOT NULL
+                );
+        `);
 
         await client.query(`
-  CREATE TABLE IF NOT EXISTS room_users (
-    roomID VARCHAR(255) REFERENCES rooms(roomID),
-    userID INTEGER REFERENCES users(id),
-    PRIMARY KEY (roomID, userID)
-  );
-`);
+            CREATE TABLE IF NOT EXISTS room_users (
+                                                      roomID VARCHAR(255) REFERENCES rooms(roomID),
+                userID INTEGER REFERENCES users(id),
+                PRIMARY KEY (roomID, userID)
+                );
+        `);
         await client.query(`
-  CREATE TABLE IF NOT EXISTS project_stages (
-    stageID SERIAL PRIMARY KEY,
-    projectID VARCHAR(255) REFERENCES rooms(roomID),
-    stageName VARCHAR(255) NOT NULL,
-    weight INTEGER NOT NULL,
-    completed BOOLEAN DEFAULT FALSE
-  );
-`);
+            CREATE TABLE IF NOT EXISTS project_stages (
+                                                          stageID SERIAL PRIMARY KEY,
+                                                          projectID VARCHAR(255) REFERENCES rooms(roomID),
+                stageName VARCHAR(255) NOT NULL,
+                weight INTEGER NOT NULL,
+                completed BOOLEAN DEFAULT FALSE
+                );
+        `);
         client.release();
     } catch (err) {
         console.error(err);

@@ -16,6 +16,7 @@ class TestHomePage extends React.Component {
       sessionStatus: null,
       redirectToLogin: false,
       user: localStorage.getItem('user'),
+      projects: [],
       selectedName: '',
       selectedProject: false,
       userID: null,
@@ -26,18 +27,24 @@ class TestHomePage extends React.Component {
       joinRoomCode: localStorage.getItem('roomCode') || '',
       projectName: null,
       stages: [],
+      loading: true,
       currentProjectName: null,
     };
-    this.socket = null;
+    this.socket = io('http://localhost:5000', {
+      query: { token: localStorage.getItem('token') }, // Pass the token as a query parameter
+      withCredentials: true
+    });
     this.handleStageChange = this.handleStageChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   componentDidMount() {
     const user = localStorage.getItem("user");
+    this.socket.on('join', this.handleJoin);
     if (user) {
       this.setState({ field1Value: user });
     }
+
 
     const token = localStorage.getItem('token');
     this.socket = io('http://localhost:5000', {
@@ -48,13 +55,18 @@ class TestHomePage extends React.Component {
     this.socket.on('connect', () => {
       console.log('Connected to server');
       this.setState({ isConnected: true });
+
+      // Emit the 'user-id' event after the socket is connected
       this.socket.emit('user-id');
 
       const storedRoomCode = localStorage.getItem('roomCode');
       const storedUserID = localStorage.getItem('userID');
+      console.log(storedRoomCode);
+      console.log(storedUserID);
       if (storedRoomCode && storedUserID) {
-        console.log('Automatically joining room:', storedRoomCode);
-        this.socket.emit('join', { userID: storedUserID, roomCode: storedRoomCode });
+        this.setState({ roomCode: storedRoomCode, userID: storedUserID }, () => {
+          this.joinRoomWithCode(storedRoomCode);
+        });
       }
     });
 
@@ -89,7 +101,10 @@ class TestHomePage extends React.Component {
 
     this.socket.on('user-id', (data) => {
       console.log('Received user ID from server:', data.userID);
-      this.setState({ userID: data.userID, userPermissions: data.permissions });
+      this.setState({ userID: data.userID, userPermissions: data.permissions }, () => {
+        // Emit the 'fetch-user-projects' event after the state is updated
+        this.socket.emit('fetch-user-projects', { userID: this.state.userID });
+      });
       console.log('User permissions:', data.permissions);
     });
 
@@ -136,10 +151,34 @@ class TestHomePage extends React.Component {
       this.setState({ currentProjectName: data.projectName, stages: data.stages || [] });
     });
 
+    this.socket.on('fetch-user-projects-response', (data) => {
+      if (data.success) {
+        // Map the projects data to the structure expected by ProjectsSpace
+        const projects = data.projects.map(project => ({
+          name: project.name,
+          roomCode: project.roomCode,
+          completeness: project.completeness
+        }));
+        console.log('Projects before setting state:', projects);
+        this.setState({ projects: projects }, () => {
+          console.log('Projects after setting state:', this.state.projects);
+          this.setState({ loading: false });
+        });
+      } else {
+        console.error('Failed to fetch projects:', data.message);
+        this.setState({ loading: false });
+      }
+      this.setState({ loading: false });
+    });
+
     this.socket.on('disconnect', (message) => {
       console.log('Disconnected from server');
       this.setState({ isConnected: false });
     });
+
+    window.onbeforeunload = () => {
+      this.socket.disconnect();
+    };
   }
 
   createRoom = () => {
@@ -184,6 +223,30 @@ class TestHomePage extends React.Component {
       localStorage.setItem('roomCode', this.state.joinRoomCode);
       // Update the room code and connection status
       this.setState({ roomCode: this.state.joinRoomCode, isConnected: true });
+      this.socket.emit('fetch-user-projects', { userID: this.state.userID });
+      this.socket.emit('fetch-stages', localStorage.getItem('roomCode'));
+      if(this.state.projects){
+        this.setState({loading : false });
+      }else {
+        console.log('Loading...');
+      }
+    }
+  };
+
+  joinRoomWithCode = (roomCode) => {
+    if (this.socket && this.state.joinRoomCode) {
+      console.log('Socket connected, emitting join event');
+      this.socket.emit('join', { userID: this.state.userID, roomCode });
+
+      // Store the room code in local storage
+      localStorage.setItem('roomCode', roomCode);
+      this.setState({roomCode : roomCode});
+      // Update the room code and connection status
+      this.setState({ roomCode, isConnected: true }, () => {
+        // Fetch the updated list of stages
+        this.socket.emit('fetch-stages', { roomCode });
+      });
+      this.socket.emit('fetch-stages', { roomCode });
     }
   };
 
@@ -194,8 +257,25 @@ class TestHomePage extends React.Component {
     return (completedWeight / totalWeight) * 100;
   };
 
+  calculateProjectProgressRoom = (roomCode) => {
+    console.log(roomCode);
+    // Emit a 'fetch-stages' event to the server with the room code
+    this.socket.emit('fetch-stages', { roomCode });
+
+    // Listen for the 'fetch-stages-response' event from the server
+    this.socket.on('fetch-stages-response', (data) => {
+      const stages = data.stages;
+
+      // Calculate the project's completeness based on the stages
+      const totalWeight = stages.reduce((total, stage) => total + Number(stage.weight), 0);
+      const completedWeight = stages.reduce((total, stage) => total + (stage.completed ? Number(stage.weight) : 0), 0);
+      console.log('Project completeness:', (completedWeight / totalWeight) * 100);
+      return (completedWeight / totalWeight) * 100;
+    });
+  };
+
   submitStages = () => {
-    if (this.socket) {
+    if (this.socket && this.state.isConnected) {
       console.log('Socket connected, emitting submit-stages event');
 
       // Check for duplicate stage names
@@ -206,16 +286,19 @@ class TestHomePage extends React.Component {
         console.error('Cannot submit stages: duplicate stage names detected');
         return;
       }
-
       this.socket.emit('add-stages', { roomCode: this.state.roomCode, stages: this.state.stages });
 
       // Listen for the response from the server
       this.socket.on('add-stages-response', (data) => {
         if (data.success) {
+          console.log(data.stages);
           console.log('Stages submitted successfully');
         } else {
           console.error('Failed to submit stages:', data.message);
         }
+      });
+      this.socket.on('stages-updated', (data) => {
+        this.setState({ stages: data.stages }, this.calculateProjectProgress);
       });
     }
   };
@@ -237,9 +320,18 @@ class TestHomePage extends React.Component {
   };
 
   componentWillUnmount() {
+    // Remove the event listener for window.onbeforeunload
+    window.onbeforeunload = null;
     if (this.socket) {
-      this.socket.off('join-response');
+      this.socket.disconnect();
     }
+    if (this.socket) {
+      this.socket.off('join', this.handleJoin);
+    }
+  }
+  handleJoin = (data) => {
+    console.log('Received join event from server:', data.roomCode, data.projectName);
+    this.setState({ roomCode: data.roomCode, currentProjectName: data.projectName });
   }
 
   handleSelectProject = (projectName) => {
@@ -298,7 +390,7 @@ class TestHomePage extends React.Component {
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/check-session"
+          "http://localhost:5000/api/check-session"
       );
       if (response.data.status === "active") {
         this.setState({ sessionStatus: "Активна" });
@@ -346,10 +438,15 @@ class TestHomePage extends React.Component {
             <ProjectsSpace
                 onSelect={this.handleSelectProject}
                 onSubmit={this.handleSubmit}
+                userID={this.state.userID}
                 userPermissions={this.state.userPermissions}
                 projectName={this.state.currentProjectName}
                 roomCode={this.state.roomCode}
                 projectCompleteness={this.calculateProjectProgress()}
+                calculateProjectProgress={this.calculateProjectProgressRoom}
+                projects={this.state.projects}
+                loading={this.state.loading}
+                joinRoomWithCode={this.joinRoomWithCode}
             />
             <StageIformation selectedItem={selectedName} />
             <StageProjects
@@ -361,7 +458,7 @@ class TestHomePage extends React.Component {
                 onAddEmptyStage={this.handleAddEmptyStage}
                 onStageChange={this.handleStageChange}
                 onAddStage={this.handleAddStage}
-                submitStages={this.submitStages} // Pass the submitStages method as a prop
+                submitStages={this.submitStages}
             />
           </div>
         </div>

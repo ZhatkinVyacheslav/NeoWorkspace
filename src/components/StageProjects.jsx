@@ -71,8 +71,31 @@ class StageProjects extends Component {
     });
   };
 
+  componentWillUnmount() {
+    // Remove the event listener for window.onbeforeunload
+    window.onbeforeunload = null;
+    if (this.socket) {
+      this.socket.disconnect();
+    }
+    if (this.socket) {
+      this.socket.off('join', this.handleJoin);
+    }
+  }
+
   render() {
     const { nameProject, projectCode, selectedProject } = this.props;
+    const stages = this.props.stages.map((stage, index) => {
+      return (
+          <StatusAndStageName
+              key={index}
+              stageName={stage.name}
+              iconType={stage.completed ? "green" : "red"}
+              onChange={() => this.props.onStageChange(index)}
+              showCheckbox={true}
+              isChecked={stage.completed}
+          />
+      );
+    });
 
     if (!selectedProject) {
       return (
@@ -104,15 +127,7 @@ class StageProjects extends Component {
               <Plus className="plus-img" onClick={this.handleAddEmptyStage}></Plus>
             </div>
             <div className="stages">
-              {this.props.stages.map((stage, index) => (
-                  <StatusAndStageName
-                      key={index}
-                      stageName={stage.name}
-                      iconType={stage.completed ? "green" : "red"}
-                      onChange={() => this.props.onStageChange(index)}
-                      showCheckbox={true} // or false depending on the requirement
-                  />
-              ))}
+              {stages}
             </div>
             <button onClick={this.props.submitStages}>Submit Stages</button>
             <form onSubmit={this.handleFormSubmit}>
