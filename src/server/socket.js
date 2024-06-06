@@ -163,9 +163,54 @@ module.exports = function(server) {
         `, [roomID, stage.name, stage.weight, stage.completed]);
                     }
                 }
+                // After updating the stages in the database, fetch the updated stages
+                const updatedStages = await getStages(roomID);
+
+                // Emit the 'stages-updated' event with the updated stages
+                socket.emit('stages-updated', { stages: updatedStages });
             } else {
                 console.log(`No room found with code: ${roomCode}`);
             }
+            client.release();
+        });
+
+        socket.on('fetch-user-projects', async (data) => {
+            const { userID } = data;
+            console.log('Received fetch-user-projects event with userID:', userID);
+
+            // Fetch all the projects that the user has access to from the 'room_users' table
+            const client = await pool.connect();
+            const userProjects = await client.query('SELECT * FROM room_users WHERE userid = $1', [userID]);
+
+            if (userProjects.rows.length > 0) {
+                const projects = [];
+                for (let i = 0; i < userProjects.rows.length; i++) {
+                    const roomID = userProjects.rows[i].roomid;
+                    // Fetch the project details from the 'rooms' table using the room ID
+                    const project = await client.query('SELECT * FROM rooms WHERE roomid = $1', [roomID]);
+                    if (project.rows.length > 0) {
+                        // Add the project details to the 'projects' array
+                        projects.push({
+                            name: project.rows[0].projectname,
+                            roomCode: project.rows[0].roomcode,
+                            completeness: await calculateProjectProgress(roomID)
+                        });
+                    }
+                }
+                console.log("Successful fetch projects");
+                console.log(projects);
+                socket.emit('fetch-user-projects-response', { success: true, projects });
+            } else {
+                const projects = [];
+                projects.push({
+                    name: 'None',
+                    roomCode: 'None',
+                    completeness: 0
+                });
+                console.log(projects);
+                socket.emit('fetch-user-projects-response', { success: false, projects });
+            }
+
             client.release();
         });
 
@@ -267,6 +312,13 @@ module.exports = function(server) {
     });
 };
 
+const calculateProjectProgress = async (roomID) => {
+    const client = await pool.connect();
+    const stages = await client.query('SELECT * FROM project_stages WHERE projectid = $1', [roomID]);
+    const totalWeight = stages.rows.reduce((total, stage) => total + Number(stage.weight), 0);
+    const completedWeight = stages.rows.reduce((total, stage) => total + (stage.completed ? Number(stage.weight) : 0), 0);
+    return (completedWeight / totalWeight) * 100;
+};
 
 const getStages = async (roomID) => {
     const client = await pool.connect();

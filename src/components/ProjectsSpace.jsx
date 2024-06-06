@@ -9,6 +9,7 @@ class ProjectsSpace extends React.Component {
     super(props);
     this.state = {
       selectedIndex: null,
+      projects: [],
     };
   }
 
@@ -25,14 +26,19 @@ class ProjectsSpace extends React.Component {
     console.log(`Отправлен код комнаты: ${roomCode}`);
   };
 
-  handleClickSelected = (index, text) => {
-    this.setState({ selectedIndex: index });
-    this.props.onSelect(text);
+  handleClickSelected = (index, project) => {
+    this.setState({ selectedIndex: index, loading: true });
+    this.props.onSelect(project.name);
+    this.props.joinRoomWithCode(project.roomCode);
   }
 
   componentDidMount() {
     const { projectName, roomCode, projectCompleteness } = this.props;
-
+    if(this.props.projects){
+      this.setState({ loading : false });
+    }else{
+      console.log('Loading...');
+    }
     let componentProjects = (
         <Projectblock
             nameProject={`${projectName} | ${roomCode}`}
@@ -43,6 +49,11 @@ class ProjectsSpace extends React.Component {
     );
 
     this.setState({ componentProjects });
+  }
+  componentDidUpdate(prevProps) {
+    if (this.props.projects && this.props.projects !== prevProps.projects) {
+      this.setState({ loading: false });
+    }
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -61,51 +72,80 @@ class ProjectsSpace extends React.Component {
     return null;
   }
 
+  componentWillUnmount() {
+    // Remove the event listener for window.onbeforeunload
+    window.onbeforeunload = null;
+    if (this.socket) {
+      this.socket.disconnect();
+    }
+    if (this.socket) {
+      this.socket.off('join', this.handleJoin);
+    }
+  }
+
   render() {
-    return (
-      <div className="projects-container">
-        <div className="project-and-icons">
-          <span className="main-text">Проект</span>
-          <div className="project-icons">
-            <Pencil className="pencil-img"></Pencil>
-            <button onClick={this.handleClickOpen} className="hidden-button">
-              <PlusCircle alt="Plus Circle" className="plus-circle-img" />
-            </button>
-            <AddRoomFormDialog
-                isOpen={this.state.open}
-                onClose={this.handleClose}
-                onSubmit={this.props.onSubmit}
-                userPermissions={this.props.userPermissions}
+    console.log(this.props.loading);
+    if (this.props.loading) {
+      return <div>Loading...</div>; // Or render a spinner
+    } else {
+      const projectBlocks = this.props.projects.map((project, index) => {
+        // If the project's name and roomCode are both 'None', don't render it
+        if (project.name === 'None' && project.roomCode === 'None') {
+          return null;
+        }
+        // Access the "completeness" value from the "projects" array for each project
+        const completed = project.completeness;
+        // Otherwise, render the Projectblock component
+        return (
+            <Projectblock
+                key={index}
+                nameProject={`${project.name} | ${project.roomCode}`}
+                persentProject={completed}
+                onClick={() => this.handleClickSelected(index, project)}
+                className={this.state.selectedIndex === index ? 'selected' : ''}
             />
-          </div>
-        </div>
-        <div className="search-projects">
-          <form className="form-search">
-            <input
-              type="text"
-              className="input-search"
-              placeholder="Поиск.."
-              name="search"
-            ></input>
-            <button type="submit" className="search-button">
-              <Search className="search-img"></Search>
-            </button>
-          </form>
-        </div>
-        <div className="folder-projects">
-          <div className="folder">
-            <div className="folder-content1">
-              <Projectblock
-                  nameProject={`${this.state.projectName} | ${this.state.roomCode}`}
-                  persentProject={this.state.projectCompleteness}
-                  onClick={() => this.handleClickSelected(0, this.state.projectName)}
-                  className={this.state.selectedIndex === 0 ? 'selected' : ''}
-              />
+        );
+      });
+      return (
+          <div className="projects-container">
+            <div className="project-and-icons">
+              <span className="main-text">Проект</span>
+              <div className="project-icons">
+                <Pencil className="pencil-img"></Pencil>
+                <button onClick={this.handleClickOpen} className="hidden-button">
+                  <PlusCircle alt="Plus Circle" className="plus-circle-img"/>
+                </button>
+                <AddRoomFormDialog
+                    isOpen={this.state.open}
+                    onClose={this.handleClose}
+                    onSubmit={this.props.onSubmit}
+                    userPermissions={this.props.userPermissions}
+                />
+              </div>
+            </div>
+            <div className="search-projects">
+              <form className="form-search">
+                <input
+                    type="text"
+                    className="input-search"
+                    placeholder="Поиск.."
+                    name="search"
+                ></input>
+                <button type="submit" className="search-button">
+                  <Search className="search-img"></Search>
+                </button>
+              </form>
+            </div>
+            <div className="folder-projects">
+              <div className="folder">
+                <div className="folder-content1">
+                  {projectBlocks}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    );
+      );
+    }
   }
 }
 
