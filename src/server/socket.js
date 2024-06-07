@@ -130,6 +130,11 @@ module.exports = function(server) {
         });
 
         socket.on('add-stages', async (data) => {
+            if (!data) {
+                console.log('Data is undefined');
+                return;
+            }
+
             const { roomCode, stages } = data;
 
             // Fetch the room's ID from the database using the room code
@@ -188,8 +193,9 @@ module.exports = function(server) {
             const client = await pool.connect();
             const userProjects = await client.query('SELECT * FROM room_users WHERE userid = $1', [userID]);
 
+            const projects = [];
+
             if (userProjects.rows.length > 0) {
-                const projects = [];
                 for (let i = 0; i < userProjects.rows.length; i++) {
                     const roomID = userProjects.rows[i].roomid;
                     // Fetch the project details from the 'rooms' table using the room ID
@@ -207,7 +213,6 @@ module.exports = function(server) {
                 console.log(projects);
                 socket.emit('fetch-user-projects-response', { success: true, projects });
             } else {
-                const projects = [];
                 projects.push({
                     name: 'None',
                     roomCode: 'None',
