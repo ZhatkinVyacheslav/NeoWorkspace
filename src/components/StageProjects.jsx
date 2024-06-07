@@ -79,11 +79,8 @@ class StageProjects extends Component {
     this.setState({ [event.target.name]: event.target.value });
   };
 
-  SubmitNewStages1 = (stageName1, stageImportance1) =>{
-    this.setState({ newStageName: stageName1, newStageWeight: stageImportance1 });
-    this.props.onAddStage(stageName1, stageImportance1);
-    this.setState({ newStageName: "", newStageWeight: "" });
-    console.log("Submitting stages");
+  SubmitNewStages1 = (stageName1, stageImportance1) => {
+    this.props.submitStages(stageName1, stageImportance1);
   }
 
   handleFormSubmit = (event) => {
@@ -235,14 +232,15 @@ class StageProjects extends Component {
           <UserInProject
             isOpen={this.state.openUsers}
             closeModal={this.handleClose}
+            users={this.props.users}
           ></UserInProject>
           <AddStage
-            isOpen={this.state.openAddtage}
-            closeAddStage={this.handleClose}
-            setWrapperRef={this.setWrapperRef}
-            SubmitNewStages={this.SubmitNewStages1}
-            SubmitDataBased={this.props.submitStages}
-          ></AddStage>
+              isOpen={this.state.openAddtage}
+              closeAddStage={this.handleClose}
+              setWrapperRef={this.setWrapperRef}
+              SubmitNewStages={this.SubmitNewStages1}
+              SubmitDataBased={this.props.submitStages}
+          />
         </div>
       </div>
     );
