@@ -48,10 +48,10 @@ class AddStage extends React.Component {
     this.setState({ stageName: event.target.value });
   };
 
-  handleSubmitNewStages = () => {
+  handleSubmitNewStages = (event) => {
+    event.preventDefault();
     this.props.SubmitNewStages(this.state.stageName, this.state.stageImportance);
-    this.props.SubmitDataBased();
-  }
+  };
 
   handleFormSubmit = (event) => {
     event.preventDefault(); // Prevents the default form submission behavior

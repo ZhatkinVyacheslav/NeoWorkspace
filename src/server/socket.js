@@ -174,6 +174,12 @@ module.exports = function(server) {
             client.release();
         });
 
+        socket.on('stages-updated', (data) => {
+            const { roomCode, stages } = data;
+            // Broadcast the 'stages-updated' event to all clients in the room
+            socket.to(roomCode).emit('stages-updated', { stages });
+        });
+
         socket.on('fetch-user-projects', async (data) => {
             const { userID } = data;
             console.log('Received fetch-user-projects event with userID:', userID);
@@ -278,11 +284,18 @@ module.exports = function(server) {
 
                 // Fetch all users in the room
                 const roomUsers = await client.query('SELECT * FROM room_users WHERE roomID = $1', [roomID]);
+
                 // Emit the 'user-joined' event for all users in the room
                 for (let i = 0; i < roomUsers.rows.length; i++) {
                     const roomUserID = roomUsers.rows[i].userid;
                     const roomUser = await client.query('SELECT * FROM users WHERE id = $1', [roomUserID]);
-                    socket.emit('user-joined', {user: {id: roomUserID, name: roomUser.rows[0].login}});
+                    socket.emit('user-joined', {
+                        user: {
+                            id: roomUserID,
+                            name: roomUser.rows[0].login,
+                            permissions: roomUser.rows[0].permissions
+                        }
+                    });
                 }
 
                 // Fetch the current state of all stages from the database using the getStages function

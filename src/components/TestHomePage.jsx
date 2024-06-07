@@ -7,6 +7,7 @@ import Header from "./Header";
 import StageProjects from "./StageProjects";
 import StageIformation from "./StageInformation";
 import AddRoomFormDialog from "./AddRoomFormDalog";
+import UserInProject from "./UsersInProject";
 
 
 class TestHomePage extends React.Component {
@@ -36,6 +37,16 @@ class TestHomePage extends React.Component {
     });
     this.handleStageChange = this.handleStageChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    // Check if the roomCode state has changed
+    console.log("Emitting fetch after update");
+    if (this.state.roomCode !== prevState.roomCode) {
+      // If the roomCode state has changed, emit the 'fetch-user-projects' event
+      this.socket.emit('fetch-user-projects', { userID: this.state.userID });
+    }
+    console.log(this.state.projects);
   }
 
   componentDidMount() {
@@ -75,6 +86,8 @@ class TestHomePage extends React.Component {
     });
 
     this.socket.on('user-joined', (data) => {
+      console.log('Received user-joined event from server:', data);
+
       let parsedData;
 
       if (typeof data === 'object' && data !== null) {
@@ -89,6 +102,15 @@ class TestHomePage extends React.Component {
       }
 
       const user = parsedData.user;
+
+      // Set the user's role based on their permissions level
+      if (user.permissions === "1") {
+        user.role = 'Teacher';
+      } else if (user.permissions === "2") {
+        user.role = 'Student';
+      }
+
+      console.log('Parsed user data:', user);
 
       this.setState(prevState => {
         if (!prevState.users.find(u => u.id === user.id)) {
@@ -159,17 +181,24 @@ class TestHomePage extends React.Component {
           roomCode: project.roomCode,
           completeness: project.completeness
         }));
-        console.log('Projects before setting state:', projects);
-        this.setState({ projects: projects }, () => {
-          console.log('Projects after setting state:', this.state.projects);
+        // Check if the fetched projects are not empty
+        if (projects.length > 0) {
+          this.setState({ projects: projects, loading: false });
+        } else {
+          // Handle the case when the fetched projects are empty
+          console.error('No projects found for the user');
           this.setState({ loading: false });
-        });
+        }
       } else {
         console.error('Failed to fetch projects:', data.message);
         this.setState({ loading: false });
       }
-      this.setState({ loading: false });
     });
+
+    // Set a timeout to automatically set the loading state to false after 5 seconds
+    setTimeout(() => {
+      this.setState({ loading: false });
+    }, 5000);
 
     this.socket.on('disconnect', (message) => {
       console.log('Disconnected from server');
@@ -225,6 +254,7 @@ class TestHomePage extends React.Component {
       this.setState({ roomCode: this.state.joinRoomCode, isConnected: true });
       this.socket.emit('fetch-user-projects', { userID: this.state.userID });
       this.socket.emit('fetch-stages', localStorage.getItem('roomCode'));
+      this.socket.emit('stages-updated');
       if(this.state.projects){
         this.setState({loading : false });
       }else {
@@ -274,33 +304,17 @@ class TestHomePage extends React.Component {
     });
   };
 
-  submitStages = () => {
-    if (this.socket && this.state.isConnected) {
-      console.log('Socket connected, emitting submit-stages event');
-
-      // Check for duplicate stage names
-      const stageNames = this.state.stages.map(stage => stage.name);
-      const hasDuplicates = stageNames.some((name, index) => stageNames.indexOf(name) !== index);
-
-      if (hasDuplicates) {
-        console.error('Cannot submit stages: duplicate stage names detected');
-        return;
+  submitStages = (stageName, stageImportance) => {
+    console.log('Submitting stages socket event.');
+    this.setState(prevState => {
+      const stages = [...prevState.stages, { name: stageName, weight: stageImportance, completed: false }];
+      return { stages };
+    }, () => {
+      // Emit the 'stages-updated' event to the server with the updated stages
+      if (this.socket) {
+        this.socket.emit('stages-updated', { roomCode: this.state.roomCode, stages: this.state.stages });
       }
-      this.socket.emit('add-stages', { roomCode: this.state.roomCode, stages: this.state.stages });
-
-      // Listen for the response from the server
-      this.socket.on('add-stages-response', (data) => {
-        if (data.success) {
-          console.log(data.stages);
-          console.log('Stages submitted successfully');
-        } else {
-          console.error('Failed to submit stages:', data.message);
-        }
-      });
-      this.socket.on('stages-updated', (data) => {
-        this.setState({ stages: data.stages }, this.calculateProjectProgress);
-      });
-    }
+    });
   };
 
   setProject = () => {
@@ -351,6 +365,11 @@ class TestHomePage extends React.Component {
     this.setState(prevState => {
       const stages = [...prevState.stages, { name, weight, completed: false }];
       return { stages };
+    }, () => {
+      // Emit the 'stages-updated' event to the server with the updated stages
+      if (this.socket) {
+        this.socket.emit('stages-updated', { roomCode: this.state.roomCode, stages: this.state.stages });
+      }
     });
   };
 
