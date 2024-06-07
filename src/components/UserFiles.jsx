@@ -4,9 +4,9 @@ import { Folder } from "./IconsComponent";
 
 function UserFiles(props) {
   return (
-    <div class="user-files">
-      <Folder class="folder-img"></Folder>
-      <span class="files-text">{props.fileName} (Добавил: {props.userName})</span>
+    <div className="user-files">
+      <Folder className="folder-img"></Folder>
+      <span className="files-text">{props.fileName} (Добавил: {props.userName})</span>
     </div>
   );
 }

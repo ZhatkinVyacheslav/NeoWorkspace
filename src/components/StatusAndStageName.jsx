@@ -5,12 +5,14 @@ import { Statusg as GreenCircle, Statusr as RedCircle } from "./IconsComponent";
 function StatusAndStageName({ stageName, iconType, onChange, showCheckbox, isChecked }) {
     return (
         <div className="stage" style={{ display: 'flex', alignItems: 'center' }}>
+            <div className="status-and-name">
             {iconType === "green" ? (
-                <GreenCircle className="green-circle-img"></GreenCircle>
+                <GreenCircle className="circle-img"></GreenCircle>
             ) : (
-                <RedCircle className="red-circle-img"></RedCircle>
+                <RedCircle className="circle-img"></RedCircle>
             )}
             <span className="stage-name">{stageName}</span>
+            </div>
             {showCheckbox && <input type="checkbox" onChange={onChange} checked={isChecked} />}
         </div>
     );

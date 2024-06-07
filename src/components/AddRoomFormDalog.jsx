@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "../css/formDialog.css";
 import "../css/style.css";
 import { Search } from "./IconsComponent";
 

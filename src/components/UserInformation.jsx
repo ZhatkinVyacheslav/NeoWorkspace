@@ -1,5 +1,4 @@
 import React from 'react';
-import "../css/formDialog.css"
 import "../css/style.css"
 
 function UserInformation({user, onClose}) {

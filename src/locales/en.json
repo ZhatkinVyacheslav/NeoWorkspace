@@ -1,0 +1,8 @@
+{
+  "registration": "Registration",
+  "login": "Login",
+  "password": "Password",
+  "confirmPassword": "Confirm Password",
+  "register": "Register",
+  "alreadyRegistered": "Already registered?"
+}

@@ -4,10 +4,10 @@ import "./../css/style.css";
 
 function AvatarAndName(props) {
   return (
-    <div class="avatar">
+    <div className="avatar">
       <Avatar className="avatar-img" />
-      <div class="text-nearby-img">
-        <span class="white-logo-text">{props.userName}</span>
+      <div className="text-nearby-img">
+        <span className="white-logo-text">{props.userName}</span>
       </div>
     </div>
   );

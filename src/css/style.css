@@ -1,483 +1,771 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Ubuntu&display=swap");
 
 body {
-    background-color: #1E1E1E;
-    /* overflow: hidden; */
+  background-color: #1e1e1e;
+  /* overflow: hidden; */
 }
 
 /* Стилизовать скроллбар */
 ::-webkit-scrollbar {
-    width: 10px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: #f1f1f1;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: #888;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: #555;
-  }
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
 
 span {
-    cursor: default;
+  cursor: default;
 }
 
-p{
-    margin: 0;
-    cursor: default;
+p {
+  margin: 0;
+  cursor: default;
 }
 
-.full-screen-container{
-    width: 130vh;
-    height: calc(100vh - 20px);
-    display: grid;
-    place-items: center;
-    margin-bottom: 10px;
-    margin-top: 10px;
+.full-screen-container {
+  width: 130vh;
+  height: calc(100vh - 20px);
+  display: grid;
+  place-items: center;
+  margin-bottom: 10px;
+  margin-top: 10px;
 }
 
-.home-container{
-    display: grid;
-    grid-template-areas: 
-        "header header header"
-        "projects project-informations project-informations"
-        "stage project-informations project-informations";
-    grid-template-columns: 316px calc(100% - 316px);
-    grid-template-rows: 60px 360px 1fr;
-    gap: 10px;
-    width: 100%;
-    height: 100%;
-    max-width: 1440px;
-    max-height: 100vh;
+.home-container {
+  display: grid;
+  grid-template-areas:
+    "header header header"
+    "projects project-informations project-informations"
+    "stage project-informations project-informations";
+  grid-template-columns: 316px calc(100% - 316px);
+  grid-template-rows: 60px 360px 1fr;
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  max-width: 1440px;
+  max-height: 100vh;
 }
 
 /* Стили Хэдера */
 
-.header-container{
-    grid-area: header;
-    background-color: #454545;
-    border-radius: 10px;
-    display: flex;
-    /* align-items: center; */
-    justify-content: space-between;
-    height: 100%;
-    width: 100%;
+.header-container {
+  grid-area: header;
+  background-color: #454545;
+  border-radius: 10px;
+  display: flex;
+  /* align-items: center; */
+  justify-content: space-between;
+  height: 100%;
+  width: 100%;
 }
 
-.logo-container{
-    display: flex;
-    height: 100%;
-    margin-left: 14px;
-    margin-top: 14px;
-    margin-bottom: 14px;
+.logo-container {
+  display: flex;
+  height: 100%;
+  margin-left: 14px;
+  margin-top: 14px;
+  margin-bottom: 14px;
 }
 
-.text-nearby-img{
-    margin-left: 8px;
-    transform: translateY(-2px);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; 
-    cursor: pointer;
+.text-nearby-img {
+  margin-left: 8px;
+  transform: translateY(-2px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
 }
 
-.white-logo-text{
-    font-family: 'Montserrat', sans-serif;
-    font-size: 32px;
-    color: white;
+.white-logo-text {
+  font-family: "Montserrat", sans-serif;
+  font-size: 32px;
+  color: white;
 }
 
-.blue-logo-text{
-    font-family: 'Montserrat', sans-serif;
-    font-size: 32px;
-    color: #00D0DD;
+.blue-logo-text {
+  font-family: "Montserrat", sans-serif;
+  font-size: 32px;
+  color: #00d0dd;
 }
 
-.avatar-and-icons-container{
-    display: flex;
-    height: 100%;
-    margin-right: 14px;
-    margin-top: 14px;
-    margin-bottom: 14px;
-    gap: 14px
+.avatar-and-icons-container {
+  display: flex;
+  height: 100%;
+  margin-right: 14px;
+  margin-top: 14px;
+  margin-bottom: 14px;
+  gap: 14px;
 }
 
-.avatar{
-    display: flex;
-    height: 100%;
-    margin: 0;
-    cursor: pointer;
+.avatar {
+  display: flex;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
 }
 
-.users-img{
-    width: 40px;
-    height: 32px;
+.users-img {
+  width: 40px;
+  height: 32px;
 }
 
-.avatar-img{
-    width: 40px;
-    height: 40px;
-    transform: translateY(-2px);
-    cursor: pointer;
+.avatar-img {
+  width: 40px;
+  height: 40px;
+  transform: translateY(-2px);
+  cursor: pointer;
 }
 
-.union-img{
-    width: 32px;
-    height: 32px;
-    cursor: pointer;
-    transition: opacity 0.1s ease; 
+.union-img {
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  transition: opacity 0.1s ease;
 }
 
-.union-img :hover{
-    opacity: 0.7;
+.union-img :hover {
+  opacity: 0.7;
 }
 
-.envelope-img{
-    width: 36px;
-    height: 32px;
-    cursor: pointer;
-    transition: opacity 0.1s ease; 
+.envelope-img {
+  width: 36px;
+  height: 32px;
+  cursor: pointer;
+  transition: opacity 0.1s ease;
 }
 
-.envelope-img:hover{
-    opacity: 0.6;
+.envelope-img:hover {
+  opacity: 0.6;
 }
 
 /* Стили пространства для проектов  */
 
-.projects-container{
-    grid-area: projects;
-    background-color: #454545;
-    border-radius: 10px;
+.projects-container {
+  grid-area: projects;
+  background-color: #454545;
+  border-radius: 10px;
 }
 
-.project-and-icons{
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    height: 52px;
-    align-items: center;
+.project-and-icons {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  height: 52px;
+  align-items: center;
 }
 
-.main-text{
-    margin-left: 14px;
-    font-family: 'Ubuntu', sans-serif;
-    font-size: 30px;
-    color: white;
+.main-text {
+  margin-left: 14px;
+  font-family: "Ubuntu", sans-serif;
+  font-size: 30px;
+  color: white;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
-.project-icons{
-    display: flex;
-    margin-right: 14px;
-    gap: 14px;
-    cursor: pointer;
+.project-icons {
+  display: flex;
+  margin-right: 14px;
+  gap: 14px;
+  cursor: pointer;
 }
 
-.pencil-img{
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-    transition: filter 0.3s ease;
+.pencil-img {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  transition: filter 0.3s ease;
 }
 
-.pencil-img:hover{
-    filter: brightness(70%);
+.pencil-img:hover {
+  filter: brightness(70%);
 }
 
-.hidden-button{
-    text-align: center;
-    background-color: transparent;
-    border: none;
+.hidden-button {
+  text-align: center;
+  background-color: transparent;
+  border: none;
 }
 
-.plus-circle-img{
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-    transition: filter 0.1s ease;
+.plus-circle-img {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  transition: filter 0.1s ease;
 }
 
-.plus-circle-img:hover{
-    filter: brightness(70%);
+.plus-circle-img:hover {
+  filter: brightness(70%);
 }
 
-.search-projects{
-    width: calc(100% - 28px);
-    height: 36px;
-    background-color: #2d2d2d;
-    border-radius: 20px;
-    margin-right: 14px;
-    margin-left: 14px;
-    border: 1px solid #8e8e8e;
+.search-projects {
+  width: calc(100% - 28px);
+  height: 36px;
+  background-color: #2d2d2d;
+  border-radius: 20px;
+  margin-right: 14px;
+  margin-left: 14px;
+  border: 1px solid #8e8e8e;
 }
 
-.form-search{
-    display: flex;
-    justify-content: space-between;
-    background-color: #2d2d2d;
-    border-radius: 20px;
-    margin-left: 14px;
-    width: calc(100% - 28px);
-    height: 100%;
+.form-search {
+  display: flex;
+  justify-content: space-between;
+  background-color: #2d2d2d;
+  border-radius: 20px;
+  margin-left: 14px;
+  width: calc(100% - 28px);
+  height: 100%;
 }
 
-.input-search{
-    background-color: #2d2d2d ;
-    color: white;
-    border: none;
-    height: calc(100% - 2px);
-    outline: none;
-    flex-grow: 1;
+.input-search {
+  background-color: #2d2d2d;
+  color: white;
+  border: none;
+  height: calc(100% - 2px);
+  outline: none;
+  flex-grow: 1;
 }
 
-.search-button{
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    border-radius: 2px;
+.search-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 2px;
 }
 
-.search-img{
-    width: 22px;
-    height: 22px;
-    background-color: transparent;
-    opacity: 0.7;
-    transition: opacity 0.1s ease; 
+.search-img {
+  width: 22px;
+  height: 22px;
+  background-color: transparent;
+  opacity: 0.7;
+  transition: opacity 0.1s ease;
 }
 
 .search-img:hover {
-    opacity: 1;
+  opacity: 1;
 }
 
 .folder-project {
-    width: 100%;
-    background-color: #f0f0f0;
-    padding: 10px;
-    overflow: scroll;
+  width: 100%;
+  background-color: #f0f0f0;
+  padding: 10px;
+  overflow: scroll;
 }
 
 .folder-and-arrow {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
-.chevron-down-img{
-    width: 24;
-    height: 14;
-    transition: transform 0.3s ease;
+.chevron-down-img {
+  width: 24;
+  height: 14;
+  transition: transform 0.3s ease;
 }
 
-.chevron-right-img{
-    width: 24;
-    height: 14;
-    transform: rotate(270deg);
+.chevron-right-img {
+  width: 24;
+  height: 14;
+  transform: rotate(270deg);
 }
 
-.folder-label{
-    color:#8e8e8e;
-    font-family: 'Ubuntu', sans-serif;
-    font-size: 18px;
+.folder-label {
+  color: #8e8e8e;
+  font-family: "Ubuntu", sans-serif;
+  font-size: 18px;
 }
 
 .folder {
-    margin-left: 14px;
-    margin-top: 14px;
-    cursor: pointer;
+  margin-left: 14px;
+  margin-top: 14px;
+  cursor: pointer;
 }
-  
+
 .folder label {
-    display: block;
-    position: relative;
-    cursor: pointer;
+  display: block;
+  position: relative;
+  cursor: pointer;
 }
-   
+
 .folder input[type="checkbox"] {
-    display: none;
+  display: none;
 }
-  
+
 .folder-content {
-    display: none;
+  display: none;
 }
 
 #toggle1:checked + .folder-content {
-    display: block;
+  display: block;
 }
 
-#toggle1:checked + .folder-and-arrow .chevron-down-img{
-    width: 24;
-    height: 14;
-    transform: rotate(270deg);
+#toggle1:checked + .folder-and-arrow .chevron-down-img {
+  width: 24;
+  height: 14;
+  transform: rotate(270deg);
 }
 
-.project{
-    display: flex;
-    background-color: #8e8e8e;
-    height: 48px;
-    width: calc(100% - 14px);
-    border-radius: 10px;
-    justify-content: space-between;
-    align-items: center;
-    transition: 0.1s ease-in-out;
-    margin-bottom: 14px;
+.project {
+  display: flex;
+  background-color: #8e8e8e;
+  height: 48px;
+  width: calc(100% - 14px);
+  border-radius: 10px;
+  justify-content: space-between;
+  align-items: center;
+  transition: 0.1s ease-in-out;
+  margin-bottom: 14px;
 }
 
-.project:hover{
-    outline: 2px solid transparent;
-    outline-color: #00D0DD;
+.project:hover {
+  outline: 2px solid transparent;
+  outline-color: #00d0dd;
 }
 
-.project-name{
-    margin-left: 14px;
-    font-family: 'Ubuntu', sans-serif;
-    font-size: 18px;
-    color: #f0f0f0;
-    margin-right: 14px;
+.project-name {
+  margin-left: 14px;
+  font-family: "Ubuntu", sans-serif;
+  font-size: 18px;
+  color: #f0f0f0;
+  margin-right: 14px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden; /* Обрезаем текст, который не помещается */
+}
+
+/* Стили для AddRoomFormDialog */
+
+.formDialogOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.formDialogContainer {
+  background-color: #454545;
+  padding: 20px;
+  border-radius: 10px;
+  position: relative;
+  width: 460px;
+  display: grid;
+  outline: 2px solid transparent;
+  outline-color: #00d0dd;
+  gap: 14px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.close-and-text {
+  display: flex;
+  justify-content: space-between;
+}
+
+.main-text-form {
+  margin-left: 14px;
+  font-family: "Ubuntu", sans-serif;
+  font-size: 30px;
+  color: white;
+  text-indent: 0;
+  margin: 0;
+}
+
+.search {
+  width: calc(100% - 28px);
+  height: 200%;
+}
+
+.input-search-container {
+  display: flex;
+  justify-content: space-between;
+  width: calc(100% - 28px);
+  height: 30px;
+  background-color: #2d2d2d;
+  border-radius: 20px;
+  outline-color: #8e8e8e;
+}
+
+.input-search2 {
+  background-color: #2d2d2d;
+  border: none;
+  color: white;
+  border: none;
+  height: calc(100% - 2px);
+  outline: none;
+  flex-grow: 1;
+  border-radius: 20px;
+}
+
+.form-search2 {
+  display: flex;
+  justify-content: space-between;
+  background-color: #2d2d2d;
+  border-radius: 20px;
+  margin-left: 14px;
+  width: calc(100% - 28px);
+  height: 100%;
+}
+
+.search-projects2 {
+  width: calc(100% - 28px);
+  height: 36px;
+  background-color: #2d2d2d;
+  border-radius: 20px;
+  margin-right: 14px;
+  border: 1px solid #8e8e8e;
 }
 
 /* Стили для элемнтов этапов проекта  */
 
-.stage-container{
-    grid-area: stage;
-    background-color: #454545;
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
+.stage-container {
+  grid-area: stage;
+  border-radius: 10px;
+  display: flex;
+  height: 100%;
+  width: calc(200% + 10px);
 }
 
-.group_users-img{
-    width: 30px;
-    height: 24px;
-    transition: opacity 0.1s ease; 
+.stage-contant {
+  background-color: #454545;
+  height: 100%;
+  width: calc(50% - 5px);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
 }
 
-.group_users-img:hover{
-    opacity: 0.7;
+.group_users-img {
+  width: 30px;
+  height: 24px;
+  transition: opacity 0.1s ease;
 }
 
-.settings-img{
-    height: 24px;
-    width: 24px;
-    transition: opacity 0.1s ease; 
+.group_users-img:hover {
+  opacity: 0.7;
 }
 
-.settings-img:hover{
-    opacity: 0.7;
+.settings-img {
+  height: 24px;
+  width: 24px;
+  transition: opacity 0.1s ease;
 }
 
-.stage-and-icon{
-    display:flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-left: 14px;
-    margin-right: 14px;
+.settings-img:hover {
+  opacity: 0.7;
 }
 
-.stage-text{
-    color:#f0f0f0;
-    font-family: 'Ubuntu', sans-serif;
-    font-size: 18px;
-    /* white-space: nowrap; Запрещаем перенос строк
-    overflow: hidden; Обрезаем текст, который не помещается
-    text-overflow: ellipsis; Добавляем троеточие, когда текст обрезан */
-    width: calc(100%-28px);
+.stage-and-icon {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-left: 14px;
+  margin-right: 14px;
 }
 
-.statusr-img{
-    width: 10px;
-    width: 10px;
+.stage-text {
+  color: #f0f0f0;
+  margin-top: 2px;
+  margin-left: 2px;
+  font-family: "Ubuntu", sans-serif;
+  font-size: 18px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden; /* Обрезаем текст, который не помещается */
+  width: calc(100%-28px);
 }
 
-.stages-component{
-    display: flex;
-    margin-left: 14px;
-    margin-right: 14px;
-    align-items: center;
-    width: calc(100%-28px);
+.statusr-img {
+  width: 10px;
+  width: 10px;
 }
 
-/* .stages{
-    height: 100%;
-    overflow: auto;
-} */
-
-.color-grey{
-    color: #D5D5D5;
+.stages-component {
+  display: flex;
+  margin-left: 14px;
+  margin-right: 14px;
+  align-items: center;
+  width: calc(100%-28px);
 }
 
-.main-stage-content{
-    flex-grow: 1;
-    overflow-y: auto;
+.stage {
+  display: flex;
+  /* width: calc(100% - 28px); */
 }
 
-.Project-code{
-    bottom: 0;
-    margin-top: 14px;
-    margin-bottom: 14px;
-    text-align: center;
+.stages {
+  display: flex;
+  flex-direction: column;
+  margin-left: 14px;
+  margin-top: 2px;
+  height: 100%;
+  overflow: auto;
+  margin-right: 14px;
+}
+
+.status-and-name{
+  align-items: center;
+  display: flex;
+  flex-grow: 1;
+}
+
+.color-grey {
+  color: #d5d5d5;
+}
+
+.main-stage-content {
+  flex-grow: 1;
+  /* overflow-y: auto; */
+  overflow: hidden;
+}
+
+.Project-code {
+  bottom: 0;
+  margin-top: 14px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+/* Стили для UsersInProject */
+
+.user-in-project-content {
+  height: 100%;
+  width: calc(50% - 5px);
+  margin-left: 10px;
+}
+
+.users-container {
+  background-color: #454545;
+  outline: 2px solid transparent;
+  outline-color: #00d0dd;
+  display: block;
+  border-radius: 10px;
+  width: 100%;
+  height: calc(100% - 20px);
+  padding: 10px;
+}
+
+.close-and-text1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Выравниваем по вертикали */
+}
+
+.modal-close1 {
+  font-size: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: absolute; /* Позиционируем кнопку в правом верхнем углу */
+  top: 10px;
+  right: 10px;
+}
+
+.users-and-icon1 {
+  display: flex;
+  align-items: center; /* Выравниваем по вертикали */
+  justify-content: space-between; /* Распределяем элементы по ширине */
+}
+
+.plus-users-icon1 {
+  margin: 0;
+}
+
+.main-text1 {
+  font-family: "Ubuntu", sans-serif;
+  font-size: 30px;
+  color: white;
+  text-indent: 0;
+}
+
+.avatar-user1 {
+  display: flex;
+  margin-top: 14px;
+}
+
+.Name-and-role {
+  display: flex;
+  flex-direction: column;
+  margin-left: 4px;
+}
+
+.Name-user {
+  font-family: "Ubuntu", sans-serif;
+  font-size: 18px;
+  color: white;
+  text-indent: 0;
+  margin: 0;
+}
+
+.Role-user {
+  font-family: "Ubuntu", sans-serif;
+  font-size: 14px;
+  color: #8e8e8e;
+  text-indent: 0;
+  margin: 0;
+}
+
+.plus-img {
+  transition: opacity 0.1s ease;
+}
+
+.plus-img :hover {
+  opacity: 0.7;
+}
+
+/* Стли для  AddStage*/
+
+.addStage-container {
+  background-color: #454545;
+  height: auto;
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 0 0 2px #00d0dd;
+  margin-left: 2px;
+}
+
+.addStage-container {
+  font-family: "Ubuntu", sans-serif;
+  font-size: 18px;
+  color: white;
+  text-indent: 0;
+  padding: 14px;
+}
+
+.add-inputs {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stage-name {
+  color: #8e8e8e;
+  margin-top: 2px;
+  margin-left: 2px;
+  font-family: "Ubuntu", sans-serif;
+  font-size: 18px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden; /* Обрезаем текст, который не помещается */
+  /* width: calc(100%-28px); */
+  text-align: center;
+  top: -4px;
+}
+
+.new-stage-name {
+  height: 18px;
+  flex-grow: 1;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.importance {
+  height: 18px;
+  width: 52px;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.hidden-button1 {
+  text-align: center;
+  background-color: transparent;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.check-img {
+  margin-top: 2px;
+  margin-left: 2px;
+  transition: opacity 0.1s ease;
+}
+
+.check-img:hover {
+  opacity: 0.7;
 }
 
 /* Стили для пространства с инфформацией о этапе проекта */
 
-.project-informations-container{
-    grid-area: project-informations;
-    background-color: #454545;
-    border-radius: 10px;
+.project-informations-container {
+  grid-area: project-informations;
+  background-color: #454545;
+  border-radius: 10px;
 }
 
-.text-redactor{
-    margin-top: 14px;
-    margin-left: 14px;
-    margin-right: 14px;
-    width: calc(100% - 28px);
-    height: calc(80% - 14px);
-    background-color: #f0f0f0;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    outline: 1px solid #00D0DD;
+.text-redactor {
+  margin-top: 14px;
+  margin-left: 14px;
+  margin-right: 14px;
+  width: calc(100% - 28px);
+  height: calc(80% - 14px);
+  background-color: #f0f0f0;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  outline: 1px solid #00d0dd;
 }
 
-.attached-files-container{
-    display: block;
-    margin-left: 14px;
-    margin-right: 14px;
-    margin-bottom: 14px;
-    width: calc(100% - 28px);
-    height: calc(20% - 14px);
-    background-color:#2d2d2d;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
-    outline: 1px solid #00D0DD;
+.attached-files-container {
+  display: block;
+  margin-left: 14px;
+  margin-right: 14px;
+  margin-bottom: 14px;
+  width: calc(100% - 28px);
+  height: calc(20% - 14px);
+  background-color: #2d2d2d;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  outline: 1px solid #00d0dd;
 }
 
-.text-redactor h1{
-    margin: 0;
+.text-redactor h1 {
+  margin: 0;
 }
 
-.files{
-    display: block;
-    margin-left: 14px;
+.files {
+  display: block;
+  margin-left: 14px;
 }
 
-.user-files{
-    display: flex;
-    align-items: center;
-    width: calc(100% - 28px);
+.user-files {
+  display: flex;
+  align-items: center;
+  width: calc(100% - 28px);
 }
 
-.attached-files-text{
-    margin-left: 14px;
-    font-family: 'Ubuntu', sans-serif;
-    font-size: 18px;
-    color: white;
+.attached-files-text {
+  margin-left: 14px;
+  font-family: "Ubuntu", sans-serif;
+  font-size: 18px;
+  color: white;
 }
 
-.files-text{
-    font-family: 'Ubuntu', sans-serif;
-    font-size: 16px;
-    color: #ffffff;
+.files-text {
+  font-family: "Ubuntu", sans-serif;
+  font-size: 16px;
+  color: #ffffff;
 }

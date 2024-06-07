@@ -1,0 +1,8 @@
+{
+  "registration": "Регистрация",
+  "login": "Логин",
+  "password": "Пароль",
+  "confirmPassword": "Подтвердите пароль",
+  "register": "Зарегистрироваться",
+  "alreadyRegistered": "зарегестрированы"
+}
