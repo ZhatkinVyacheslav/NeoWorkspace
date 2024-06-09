@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Ubuntu&display=swap");
+@import url('https://cdn.tiny.cloud/1/no-api-key/tinymce/5/plugins.min.css');
 
 body {
   background-color: #1e1e1e;
@@ -84,6 +85,7 @@ p {
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
+  text-align: center;
 }
 
 .white-logo-text {
@@ -102,9 +104,8 @@ p {
   display: flex;
   height: 100%;
   margin-right: 14px;
-  margin-top: 14px;
-  margin-bottom: 14px;
   gap: 14px;
+  align-items: center;
 }
 
 .avatar {
@@ -112,6 +113,8 @@ p {
   height: 100%;
   margin: 0;
   cursor: pointer;
+  justify-content: center;
+  margin-top: 4px;
 }
 
 .users-img {
@@ -126,12 +129,15 @@ p {
   cursor: pointer;
 }
 
+
 .union-img {
+  margin-top: 4px;
   width: 32px;
   height: 32px;
   cursor: pointer;
   transition: opacity 0.1s ease;
 }
+
 
 .union-img :hover {
   opacity: 0.7;
@@ -146,6 +152,168 @@ p {
 
 .envelope-img:hover {
   opacity: 0.6;
+}
+/* Стили для баннера информации о пользователе*/
+
+.user-information-container {
+  display: flex;
+  flex-direction: column;
+  height: 316px;
+  width: 440px;
+  background-color: #454545;
+  border-radius: 10px;
+  outline: 2px solid transparent;
+  outline-color: #00d0dd;
+  justify-content: space-between; /* Распределяет пространство между элементами */
+}
+
+.main-information {
+  flex-grow: 1; /* Этот элемент займет всё свободное пространство */
+  display: flex;
+  flex-direction: column;
+}
+
+.avatarB {
+  display: flex;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+  align-items: center;
+  max-height: 80px;
+  width: 100%;
+
+}
+
+.avatar-username-role{
+  display: flex;
+  padding: 14px;
+}
+
+.text-nearbyB-img{
+  margin-top: 14px;
+  margin-left: 14px;
+  display: flex;
+  justify-content: center;
+}
+
+.information{
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+}
+
+.inf-text{
+  font-family: "Montserrat", sans-serif;
+  font-size: 18px;
+  color: white;
+}
+
+.big-text{
+  font-size: 200%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.avatarB-img{
+  margin-top: 14px; 
+  width: 90px;
+  height: 90px;
+}
+
+.exit {
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center; 
+}
+
+.exit-text{
+  font-family: "Montserrat", sans-serif;
+  font-size: 18px;
+  color: white;
+}
+
+/* Стиои для пространства настроек приложения */
+
+.app-settings-container{
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+  width: 382px;
+  background-color: #454545;
+  border-radius: 10px;
+  outline: 2px solid transparent;
+  outline-color: #00d0dd;
+}
+
+.settings-text{
+  margin: 14px;
+}
+.settings-container{
+ display: flex;
+ flex-direction: column;
+ margin-left: 14px;
+}
+.settings-add-text{
+  font-family: "Montserrat", sans-serif;
+  font-size: 18px;
+  color: white;
+}
+
+dialog::backdrop {
+  /* Стили для фона */
+  background: rgba(0, 0, 0, 0.5); /* Полупрозрачный фон */
+}
+
+/* Стили пространства для сообщений */
+
+.messeges-container{
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+  width: 316px;
+  background-color: #454545;
+  border-radius: 10px;
+  outline: 2px solid transparent;
+  outline-color: #00d0dd;
+}
+
+.messeges-space{
+  margin-left: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px
+}
+
+.messege-container{
+  background-color: #6b6b6b;
+  height: 56px;
+  width: calc(100% - 14px);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sender{
+  margin-left: 10px;
+  font-family: "Ubuntu", sans-serif;
+  font-size: 18px;
+  color: white;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.messege-text{
+  margin-left: 10px;
+  font-family: "Ubuntu", sans-serif;
+  font-size: 18px;
+  color: white;
+  color:#D5D5D5;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden; 
 }
 
 /* Стили пространства для проектов  */
@@ -319,7 +487,7 @@ p {
 
 .project {
   display: flex;
-  background-color: #8e8e8e;
+  background-color: #6b6b6b;
   height: 48px;
   width: calc(100% - 14px);
   border-radius: 10px;
