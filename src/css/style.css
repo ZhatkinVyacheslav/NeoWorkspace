@@ -1,5 +1,6 @@
- @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Ubuntu&display=swap");
+@import url('https://cdn.tiny.cloud/1/no-api-key/tinymce/5/plugins.min.css');
 
 body {
   background-color: #1e1e1e;
