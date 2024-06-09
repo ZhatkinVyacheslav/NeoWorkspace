@@ -13,7 +13,6 @@ class AddStage extends React.Component {
   }
 
   componentDidMount() {
-    this.props.setWrapperRef(this.wrapperRef);
     document.addEventListener("click", this.handleClickOutside);
   }
 
@@ -51,6 +50,16 @@ class AddStage extends React.Component {
   handleSubmitNewStages = (event) => {
     event.preventDefault();
     this.props.SubmitNewStages(this.state.stageName, this.state.stageImportance);
+
+    // Emit a socket event to the server with the new stage data
+    this.props.socket.emit('add-stages', {
+      roomCode: this.props.roomCode,
+      stages: [{
+        name: this.state.stageName,
+        weight: this.state.stageImportance,
+        completed: false
+      }]
+    });
   };
 
   handleFormSubmit = (event) => {

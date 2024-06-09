@@ -28,7 +28,7 @@ class ProjectsSpace extends React.Component {
 
   handleClickSelected = (index, project) => {
     this.setState({ selectedIndex: index, loading: true });
-    this.props.onSelect(project.name);
+    this.props.onSelect(project.name, this.props.roomCode);
     this.props.joinRoomWithCode(project.roomCode);
   }
 
@@ -47,14 +47,31 @@ class ProjectsSpace extends React.Component {
             className={this.state.selectedIndex === 0 ? 'selected' : ''}
         />
     );
+    this.updateProjectBlocks();
 
     this.setState({ componentProjects });
   }
   componentDidUpdate(prevProps) {
     if (this.props.projects && this.props.projects !== prevProps.projects) {
-      this.setState({ loading: false });
+      this.updateProjectBlocks();
     }
   }
+
+  updateProjectBlocks = () => {
+    const projectBlocks = this.props.projects.map((project, index) => {
+      return (
+          <Projectblock
+              key={index}
+              nameProject={`${project.name} | ${project.roomCode}`}
+              persentProject={project.completeness}
+              onClick={() => this.handleClickSelected(index, project)}
+              className={this.state.selectedIndex === index ? 'selected' : ''}
+          />
+      );
+    });
+
+    this.setState({ componentProjects: projectBlocks });
+  };
 
   static getDerivedStateFromProps(nextProps, prevState) {
     if (

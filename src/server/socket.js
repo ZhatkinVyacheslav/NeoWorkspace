@@ -137,6 +137,11 @@ module.exports = function(server) {
 
             const { roomCode, stages } = data;
 
+            if (!Array.isArray(stages)) {
+                console.log('Stages is not an array');
+                return;
+            }
+
             // Fetch the room's ID from the database using the room code
             const client = await pool.connect();
             const room = await client.query('SELECT * FROM rooms WHERE roomCode = $1', [roomCode]);
@@ -185,44 +190,70 @@ module.exports = function(server) {
             socket.to(roomCode).emit('stages-updated', { stages });
         });
 
+        socket.on('update-stage', async (data) => {
+            const { roomCode, stageName, completed } = data;
+
+            // Fetch the room's ID from the database using the room code
+            const client = await pool.connect();
+            const room = await client.query('SELECT * FROM rooms WHERE roomCode = $1', [roomCode]);
+
+            if (room.rows.length > 0) {
+                const roomID = room.rows[0].roomid;
+
+                // Update the stage's completion status in the database
+                await client.query(`
+      UPDATE project_stages
+      SET completed = $1
+      WHERE projectid = $2 AND stagename = $3
+    `, [completed, roomID, stageName]);
+            } else {
+                console.log(`No room found with code: ${roomCode}`);
+            }
+            client.release();
+        });
         socket.on('fetch-user-projects', async (data) => {
             const { userID } = data;
             console.log('Received fetch-user-projects event with userID:', userID);
 
-            // Fetch all the projects that the user has access to from the 'room_users' table
-            const client = await pool.connect();
-            const userProjects = await client.query('SELECT * FROM room_users WHERE userid = $1', [userID]);
+            try {
+                // Fetch all the projects that the user has access to from the 'room_users' table
+                const client = await pool.connect();
+                const userProjects = await client.query('SELECT * FROM room_users WHERE userid = $1', [userID]);
 
-            const projects = [];
+                const projects = [];
 
-            if (userProjects.rows.length > 0) {
-                for (let i = 0; i < userProjects.rows.length; i++) {
-                    const roomID = userProjects.rows[i].roomid;
-                    // Fetch the project details from the 'rooms' table using the room ID
-                    const project = await client.query('SELECT * FROM rooms WHERE roomid = $1', [roomID]);
-                    if (project.rows.length > 0) {
-                        // Add the project details to the 'projects' array
-                        projects.push({
-                            name: project.rows[0].projectname,
-                            roomCode: project.rows[0].roomcode,
-                            completeness: await calculateProjectProgress(roomID)
-                        });
+                if (userProjects.rows.length > 0) {
+                    for (let i = 0; i < userProjects.rows.length; i++) {
+                        const roomID = userProjects.rows[i].roomid;
+                        // Fetch the project details from the 'rooms' table using the room ID
+                        const project = await client.query('SELECT * FROM rooms WHERE roomid = $1', [roomID]);
+                        if (project.rows.length > 0) {
+                            // Add the project details to the 'projects' array
+                            projects.push({
+                                name: project.rows[0].projectname,
+                                roomCode: project.rows[0].roomcode,
+                                completeness: await calculateProjectProgress(roomID)
+                            });
+                        }
                     }
+                    console.log("Successful fetch projects");
+                    console.log(projects);
+                    socket.emit('fetch-user-projects-response', { success: true, projects });
+                } else {
+                    projects.push({
+                        name: 'None',
+                        roomCode: 'None',
+                        completeness: 0
+                    });
+                    console.log(projects);
+                    socket.emit('fetch-user-projects-response', { success: false, projects });
                 }
-                console.log("Successful fetch projects");
-                console.log(projects);
-                socket.emit('fetch-user-projects-response', { success: true, projects });
-            } else {
-                projects.push({
-                    name: 'None',
-                    roomCode: 'None',
-                    completeness: 0
-                });
-                console.log(projects);
-                socket.emit('fetch-user-projects-response', { success: false, projects });
-            }
 
-            client.release();
+                client.release();
+            } catch (error) {
+                console.error('Error fetching user projects:', error);
+                socket.emit('fetch-user-projects-response', { success: false, message: 'Error fetching user projects' });
+            }
         });
 
         socket.on('fetch-stages', async (data) => {
@@ -287,6 +318,18 @@ module.exports = function(server) {
                     await client.query('INSERT INTO room_users (roomID, userID) VALUES ($1, $2)', [roomID, userID]);
                 }
 
+                // If the socket is already in a room, leave it
+                if (socket.currentRoom) {
+                    socket.leave(socket.currentRoom);
+                    console.log('Left the room.')
+                }
+
+                // Join the new room
+                socket.join(roomCode);
+
+                // Set the current room to the new room
+                socket.currentRoom = roomCode;
+
                 // Fetch all users in the room
                 const roomUsers = await client.query('SELECT * FROM room_users WHERE roomID = $1', [roomID]);
 
@@ -335,7 +378,8 @@ const calculateProjectProgress = async (roomID) => {
     const stages = await client.query('SELECT * FROM project_stages WHERE projectid = $1', [roomID]);
     const totalWeight = stages.rows.reduce((total, stage) => total + Number(stage.weight), 0);
     const completedWeight = stages.rows.reduce((total, stage) => total + (stage.completed ? Number(stage.weight) : 0), 0);
-    return (completedWeight / totalWeight) * 100;
+    const progress = (completedWeight / totalWeight) * 100;
+    return progress.toFixed(1);
 };
 
 const getStages = async (roomID) => {
@@ -345,6 +389,7 @@ const getStages = async (roomID) => {
       SELECT stageName, weight, completed
       FROM project_stages
       WHERE projectid = $1
+      ORDER BY stageid ASC
     `, [roomID]);
         return res.rows;
     } catch (e) {
