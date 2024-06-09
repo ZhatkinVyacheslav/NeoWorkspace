@@ -204,6 +204,7 @@ class TestHomePage extends React.Component {
 
     // Set a timeout to automatically set the loading state to false after 5 seconds
     setTimeout(() => {
+      this.socket.emit('fetch-user-projects', { userID: this.state.userID });
       this.setState({ loading: false });
     }, 5000);
 
@@ -294,7 +295,6 @@ class TestHomePage extends React.Component {
         // Fetch the updated list of stages
         this.socket.emit('fetch-stages', { roomCode });
       });
-      this.socket.emit('fetch-stages', { roomCode });
     }
   };
 
@@ -367,9 +367,10 @@ class TestHomePage extends React.Component {
     this.setState({ roomCode: data.roomCode, currentProjectName: data.projectName });
   }
 
-  handleSelectProject = (projectName) => {
+  handleSelectProject = (projectName, roomCode) => {
     this.setState({ selectedName: projectName });
     this.setState({ selectedProject: true});
+    this.socket.emit('fetch-stages', { roomCode });
   };
 
   handleStageChange = (index, isChecked) => {

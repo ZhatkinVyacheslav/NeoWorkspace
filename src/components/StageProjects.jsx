@@ -29,6 +29,23 @@ class StageProjects extends Component {
     document.addEventListener("click", this.handleClickOutside);
   }
 
+  componentDidUpdate(prevProps) {
+    // Check if the project has changed
+    if (this.props.nameProject !== prevProps.nameProject) {
+      // Fetch the new stages from the server or update the state with the new stages
+      this.props.socket.emit('fetch-stages', { roomCode: this.props.roomCode });
+
+      this.props.socket.on('fetch-stages-response', (data) => {
+        const stages = data.stages.map(stage => ({
+          name: stage.stagename,
+          weight: stage.weight,
+          completed: stage.completed || false
+        }));
+        this.setState({ stages: stages });
+      });
+    }
+  }
+
   static getDerivedStateFromProps(nextProps, prevState) {
     if (nextProps.stages !== prevState.componentSNaS) {
       let componentSNaS = nextProps.stages.map((stage, index) => (
@@ -90,7 +107,7 @@ class StageProjects extends Component {
       }
     setTimeout(() => {
       this.props.socket.emit('fetch-user-projects', { userID: this.props.userID });
-    }, 10000);
+    }, 5000);
     // Force a re-render of the StatusAndStageName component
     this.forceUpdate();
   };

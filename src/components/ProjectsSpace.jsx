@@ -28,7 +28,7 @@ class ProjectsSpace extends React.Component {
 
   handleClickSelected = (index, project) => {
     this.setState({ selectedIndex: index, loading: true });
-    this.props.onSelect(project.name);
+    this.props.onSelect(project.name, this.props.roomCode);
     this.props.joinRoomWithCode(project.roomCode);
   }
 
