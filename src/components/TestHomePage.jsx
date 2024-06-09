@@ -8,11 +8,13 @@ import StageProjects from "./StageProjects";
 import StageIformation from "./StageInformation";
 import AddRoomFormDialog from "./AddRoomFormDalog";
 import UserInProject from "./UsersInProject";
+import AddStage from "./AddStage";
 
 
 class TestHomePage extends React.Component {
   constructor(props) {
     super(props);
+    this.wrapperRef = React.createRef();
     this.state = {
       sessionStatus: null,
       redirectToLogin: false,
@@ -140,6 +142,11 @@ class TestHomePage extends React.Component {
       this.setState({ roomCode: data.roomCode, joinRoomCode: data.roomCode }, () => {
         // Update the room code in local storage
         localStorage.setItem('roomCode', data.roomCode);
+      });
+      this.setState(prevState => ({
+        roomCode: data.roomCode,
+        projects: [...prevState.projects, { name: this.state.projectName, roomCode: data.roomCode, completeness: 0 }]
+      }), () => {
         // Automatically join the room after it is created
         this.joinRoom();
       });
@@ -200,6 +207,15 @@ class TestHomePage extends React.Component {
       this.setState({ loading: false });
     }, 5000);
 
+    this.socket.on('stages-updated', (data) => {
+      console.log('gay', data.stages);
+
+      this.setState({ stages: data.stages }, () => {
+        const projectCompleteness = this.calculateProjectProgressRoom(this.state.roomCode);
+        this.setState({ projectCompleteness });
+      });
+    });
+
     this.socket.on('disconnect', (message) => {
       console.log('Disconnected from server');
       this.setState({ isConnected: false });
@@ -235,6 +251,8 @@ class TestHomePage extends React.Component {
           })) });
       });
 
+
+
       this.socket.on('error', (data) => {
         console.log('Received error from server:', data.message);
         // Display the error message to the user
@@ -254,7 +272,7 @@ class TestHomePage extends React.Component {
       this.setState({ roomCode: this.state.joinRoomCode, isConnected: true });
       this.socket.emit('fetch-user-projects', { userID: this.state.userID });
       this.socket.emit('fetch-stages', localStorage.getItem('roomCode'));
-      this.socket.emit('stages-updated');
+      this.socket.emit('stages-updated', { roomCode: this.state.roomCode, stages: this.state.stages });
       if(this.state.projects){
         this.setState({loading : false });
       }else {
@@ -306,6 +324,7 @@ class TestHomePage extends React.Component {
 
   submitStages = (stageName, stageImportance) => {
     console.log('Submitting stages socket event.');
+    console.log(stageName, stageImportance);
     this.setState(prevState => {
       const stages = [...prevState.stages, { name: stageName, weight: stageImportance, completed: false }];
       return { stages };
@@ -353,13 +372,18 @@ class TestHomePage extends React.Component {
     this.setState({ selectedProject: true});
   };
 
-  handleStageChange = (index) => {
-    this.setState(prevState => {
-      const stages = [...prevState.stages];
-      stages[index].completed = !stages[index].completed;
-      return { stages };
-    });
-  };
+  handleStageChange = (index, isChecked) => {
+  this.setState(prevState => {
+    const stages = [...prevState.stages];
+    stages[index].completed = isChecked;
+    return { stages };
+  }, () => {
+    // Emit the 'stages-updated' event to the server with the updated stages
+    if (this.socket) {
+      this.socket.emit('stages-updated', { roomCode: this.state.roomCode, stages: this.state.stages });
+    }
+  });
+};
 
   handleAddStage = (name, weight) => {
     this.setState(prevState => {
@@ -439,6 +463,10 @@ class TestHomePage extends React.Component {
     });
   };
 
+  setWrapperRef = (node) => {
+    this.wrapperRef = node;
+  };
+
   render() {
     const { selectedName } = this.state;
     if (this.state.redirectToLogin) {
@@ -470,6 +498,7 @@ class TestHomePage extends React.Component {
             <StageIformation selectedItem={selectedName} />
             <StageProjects
                 nameProject={selectedName}
+                userID={this.state.userID}
                 selectedProject={this.state.selectedProject}
                 projectCode={this.state.roomCode}
                 stages={this.state.stages}
@@ -478,7 +507,11 @@ class TestHomePage extends React.Component {
                 onStageChange={this.handleStageChange}
                 onAddStage={this.handleAddStage}
                 submitStages={this.submitStages}
+                socket={this.socket}
+                roomCode={this.state.roomCode}
+                calculateProjectProgress={this.calculateProjectProgressRoom}
             />
+
           </div>
         </div>
     );

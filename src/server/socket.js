@@ -137,6 +137,11 @@ module.exports = function(server) {
 
             const { roomCode, stages } = data;
 
+            if (!Array.isArray(stages)) {
+                console.log('Stages is not an array');
+                return;
+            }
+
             // Fetch the room's ID from the database using the room code
             const client = await pool.connect();
             const room = await client.query('SELECT * FROM rooms WHERE roomCode = $1', [roomCode]);
@@ -185,6 +190,27 @@ module.exports = function(server) {
             socket.to(roomCode).emit('stages-updated', { stages });
         });
 
+        socket.on('update-stage', async (data) => {
+            const { roomCode, stageName, completed } = data;
+
+            // Fetch the room's ID from the database using the room code
+            const client = await pool.connect();
+            const room = await client.query('SELECT * FROM rooms WHERE roomCode = $1', [roomCode]);
+
+            if (room.rows.length > 0) {
+                const roomID = room.rows[0].roomid;
+
+                // Update the stage's completion status in the database
+                await client.query(`
+      UPDATE project_stages
+      SET completed = $1
+      WHERE projectid = $2 AND stagename = $3
+    `, [completed, roomID, stageName]);
+            } else {
+                console.log(`No room found with code: ${roomCode}`);
+            }
+            client.release();
+        });
         socket.on('fetch-user-projects', async (data) => {
             const { userID } = data;
             console.log('Received fetch-user-projects event with userID:', userID);
@@ -345,6 +371,7 @@ const getStages = async (roomID) => {
       SELECT stageName, weight, completed
       FROM project_stages
       WHERE projectid = $1
+      ORDER BY stageid ASC
     `, [roomID]);
         return res.rows;
     } catch (e) {

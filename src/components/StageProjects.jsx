@@ -10,6 +10,7 @@ class StageProjects extends Component {
     super(props);
     this.state = {
       componentSNaS: [],
+      stages: [],
       openUsers: false,
       openAddtage: false,
       selectedComponent: null,
@@ -19,7 +20,7 @@ class StageProjects extends Component {
     // this.handleStageChange = this.handleStageChange.bind(this);
     // this.handleClickOpen = this.handleClickOpen.bind(this);
     // this.handleClose = this.handleClose.bind(this);
-    // this.handleInputChange = this.handleInputChange.bind(this);
+    this.handleInputChange = this.handleInputChange.bind(this);
     // this.handleFormSubmit = this.handleFormSubmit.bind(this);
     // this.handleAddEmptyStage = this.handleAddEmptyStage.bind(this);
   }
@@ -71,9 +72,28 @@ class StageProjects extends Component {
     }
   };
 
-  handleStageChange(index) {
-    this.props.onStageChange(index);
-  }
+  handleStageChange = (index, stageName, isChecked) => {
+    console.log(index, stageName, isChecked);
+    // Update the stage's 'completed' state
+    this.props.stages[index].completed = isChecked;
+    // Emit the 'stages-updated' event to the server with the updated stages
+    if (this.props.socket) {
+      this.props.socket.emit('stages-updated', { roomCode: this.props.roomCode, stages: this.props.stages });
+    }
+    // Emit the 'update-stage' event to the server with the stage name and the new completion status
+      if (this.props.socket) {
+        this.props.socket.emit('update-stage', {
+          roomCode: this.props.roomCode,
+          stageName: stageName,
+          completed: isChecked
+        });
+      }
+    setTimeout(() => {
+      this.props.socket.emit('fetch-user-projects', { userID: this.props.userID });
+    }, 10000);
+    // Force a re-render of the StatusAndStageName component
+    this.forceUpdate();
+  };
 
   handleInputChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
@@ -120,14 +140,14 @@ class StageProjects extends Component {
     const { nameProject, projectCode, selectedProject } = this.props;
     const stages = this.props.stages.map((stage, index) => {
       return (
-        <StatusAndStageName
-          key={index}
-          stageName={stage.name}
-          iconType={stage.completed ? "green" : "red"}
-          onChange={() => this.props.onStageChange(index)}
-          showCheckbox={true}
-          isChecked={stage.completed}
-        />
+          <StatusAndStageName
+              index={index}
+              stageName={stage.name}
+              iconType={stage.completed ? "green" : "red"}
+              onChange={this.handleStageChange}
+              showCheckbox={true}
+              isChecked={stage.completed}
+          />
       );
     });
 
@@ -142,54 +162,6 @@ class StageProjects extends Component {
     }
 
     return (
-      // <div className="stage-container">
-      //   <div className="stage-contant">
-      //   <div className="main-stage-content">
-      //     <div className="project-and-icons">
-      //       <span className="main-text">{nameProject}</span>
-      //       <div className="project-icons">
-      //         <button onClick={this.handleClickOpen} className="hidden-button">
-      //           <GroupUsers className="group_users-img"></GroupUsers>
-      //         </button>
-      //         <UserInProject
-      //             isOpen={this.state.open}
-      //             closeModal={this.handleClose}
-      //             users={this.props.users}
-      //         />
-      //         <Settings className="settings-img"></Settings>
-      //       </div>
-      //     </div>
-      //     <div className="stage-and-icon">
-      //       <span className="stage-text">Этапы проекта</span>
-      //       <Plus className="plus-img" onClick={this.handleAddEmptyStage}></Plus>
-      //     </div>
-      //     <div className="stages">
-      //       {stages}
-      //     </div>
-      //     <button onClick={this.props.submitStages}>Submit Stages</button>
-      //     <form onSubmit={this.handleFormSubmit}>
-      //       <input
-      //           type="text"
-      //           name="newStageName"
-      //           value={this.state.newStageName}
-      //           onChange={this.handleInputChange}
-      //           placeholder="Stage Name"
-      //       />
-      //       <input
-      //           type="number"
-      //           name="newStageWeight"
-      //           value={this.state.newStageWeight}
-      //           onChange={this.handleInputChange}
-      //           placeholder="Stage Weight"
-      //       />
-      //       <button type="submit">Add Stage</button>
-      //     </form>
-      //   </div>
-      //   <div className="Project-code">
-      //     <span className="main-text">Код: {projectCode}</span>
-      //   </div>
-      //   </div>
-      // </div>
       <div className="stage-container">
         <div className="stage-contant">
           <div className="main-stage-content">
@@ -197,11 +169,11 @@ class StageProjects extends Component {
               <span className="main-text">{nameProject}</span>
               <div className="project-icons">
                 <button
-                  onClick={(event) => {
-                    this.handleClickOpenUsers();
-                    event.stopPropagation();
-                  }}
-                  className="hidden-button"
+                    onClick={(event) => {
+                      this.handleClickOpenUsers();
+                      event.stopPropagation();
+                    }}
+                    className="hidden-button"
                 >
                   <GroupUsers className="group_users-img"></GroupUsers>
                 </button>
@@ -213,17 +185,17 @@ class StageProjects extends Component {
             <div className="stage-and-icon">
               <span className="stage-text">Этапы проекта</span>
               <button
-                onClick={(event) => {
-                  this.handleClickOpenAddStage();
-                  event.stopPropagation();
-                }}
-                className="hidden-button"
+                  onClick={(event) => {
+                    this.handleClickOpenAddStage();
+                    event.stopPropagation();
+                  }}
+                  className="hidden-button"
               >
                 <Plus className="plus-img"></Plus>
               </button>
             </div>
             <div className="stages">{stages}</div>
-          </div>
+            </div>
           <div className="Project-code">
             <span className="main-text">Код: {projectCode}</span>
           </div>
@@ -240,6 +212,8 @@ class StageProjects extends Component {
               setWrapperRef={this.setWrapperRef}
               SubmitNewStages={this.SubmitNewStages1}
               SubmitDataBased={this.props.submitStages}
+              socket={this.props.socket}
+              roomCode={this.props.roomCode}
           />
         </div>
       </div>
