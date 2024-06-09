@@ -56,21 +56,23 @@ class StageIformation extends Component {
           initialValue="<Strong>Тут вы сможете писать отчёт для стадии проекта .</Strong>"
           init={{
             height: '100%',
-            menubar: false,
+            menubar: true,
             plugins: [
               'advlist autolink lists link image charmap print preview anchor',
               'searchreplace visualblocks code fullscreen',
               'insertdatetime media table paste code help wordcount',
               'fontselect',
-              'code'
+              'code',
+              'fontsize' 
             ],
-            toolbar: 'undo redo | formatselect | fontsizeselect | ' +
+            toolbar: 'undo redo | formatselect | fontsizeselect fontsize | ' +
             'bold italic underline | forecolor backcolor | ' +
             'alignleft aligncenter alignright alignjustify | ' +
             'bullist numlist outdent indent | code | removeformat ',
             font_formats: 'Arial=arial,helvetica,sans-serif;Courier New=courier new,courier,monospace;Arial Black=arial black,avant garde;Georgia=georgia,palatino',
             content_css: [
               '//fonts.googleapis.com/css?family=Times+New+Roman',
+              'body { color: black; }',
               '//www.tiny.cloud/css/codepen.min.css'
             ],
             content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
