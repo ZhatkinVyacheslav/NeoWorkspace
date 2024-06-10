@@ -516,6 +516,7 @@ dialog::backdrop {
 /* Стили для AddRoomFormDialog */
 
 .formDialogOverlay {
+  z-index: 9999;
   position: fixed;
   top: 0;
   left: 0;
@@ -611,6 +612,7 @@ dialog::backdrop {
 /* Стили для элемнтов этапов проекта  */
 
 .stage-container {
+  z-index: 9999;
   grid-area: stage;
   border-radius: 10px;
   display: flex;
@@ -727,6 +729,7 @@ dialog::backdrop {
 }
 
 .users-container {
+  z-index: 9999;
   background-color: #454545;
   outline: 2px solid transparent;
   outline-color: #00d0dd;
